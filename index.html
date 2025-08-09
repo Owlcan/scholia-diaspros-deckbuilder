@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="max-age=31536000, immutable">
+    <meta http-equiv="Expires" content="Wed, 31 Dec 2025 23:59:59 GMT">
     <title>Diaper School TCG Card Database</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -759,7 +761,7 @@
         
         .atk-circle {
             position: relative;
-            background-image: url('./src/assets/images/expeditionandgames/TCG Images/atkicontop.png');
+            background-image: url('./src/assets/images/expeditionandgames/TCG Images/atkicon.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -1885,9 +1887,14 @@
                     return imageUrl;
                 }
                 
-                // For local files, try to fetch and convert to data URL
+                // For local files, try to fetch and convert to data URL with aggressive caching
                 if (!imageUrl.startsWith('http')) {
-                    const response = await fetch(imageUrl);
+                    const response = await fetch(imageUrl, {
+                        cache: 'force-cache',
+                        headers: {
+                            'Cache-Control': 'max-age=31536000'
+                        }
+                    });
                     const blob = await response.blob();
                     return new Promise((resolve, reject) => {
                         const reader = new FileReader();
@@ -2898,6 +2905,18 @@
                 updateStats();
                 updateDeckStats();
                 updateAddButtons();
+                
+                // Register service worker for aggressive image caching
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then((registration) => {
+                            console.log('Service Worker registered successfully:', registration);
+                        })
+                        .catch((error) => {
+                            console.log('Service Worker registration failed:', error);
+                        });
+                }
+                
                 setTimeout(() => {
                     loadingSpinner.style.display = 'none';
                 }, 1000);
