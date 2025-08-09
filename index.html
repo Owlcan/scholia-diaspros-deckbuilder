@@ -761,7 +761,7 @@
         
         .atk-circle {
             position: relative;
-            background-image: url('./src/assets/images/expeditionandgames/TCG Images/atkicon.png');
+            background-image: url('./src/assets/images/expeditionandgames/TCG Images/atkicontop.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -2374,21 +2374,25 @@
                 }
                 
                 if (card.atk !== undefined && card.atk !== null) {
-                    // Load ATK icon from the correct path
+                    // Load ATK icon from the correct path - FORCE atkicon.png for print
                     try {
                         const atkImg = new Image();
                         atkImg.crossOrigin = 'anonymous';
                         
+                        // HARDCODED PATH FOR PRINT FUNCTION ONLY
+                        const printAtkIconPath = './src/assets/images/expeditionandgames/TCG Images/atkicon.png';
+                        console.log('Print function loading ATK icon from:', printAtkIconPath);
+                        
                         await new Promise((resolve, reject) => {
                             atkImg.onload = () => {
-                                console.log('ATK icon loaded successfully');
+                                console.log('ATK icon loaded successfully for PRINT');
                                 resolve();
                             };
-                            atkImg.onerror = () => {
-                                console.log('Failed to load ATK icon');
-                                reject();
+                            atkImg.onerror = (error) => {
+                                console.error('Failed to load ATK icon for PRINT:', printAtkIconPath, error);
+                                reject(error);
                             };
-                            atkImg.src = './src/assets/images/expeditionandgames/TCG Images/atkicon.png';
+                            atkImg.src = printAtkIconPath;
                         });
                         
                         // Draw ATK icon at higher resolution for better quality
