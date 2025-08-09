@@ -1451,20 +1451,20 @@
             
             // Parse cost string to create energy symbols using energy icons
             function renderCost(costString) {
-                if (!costString || costString === 'Free') return '<div class="cost-symbols cost-single"><span class="energy-icon-wrapper"><img src="src/assets/images/expeditionandgames/TCG Images/universalergy.webp" class="energy-icon" alt="U"><span class="energy-number">0</span></span></div>';
+                if (!costString || costString === 'Free') return '<div class="cost-symbols cost-single"><span class="energy-icon-wrapper"><img src="./src/assets/images/expeditionandgames/TCG Images/universalergy.webp" class="energy-icon" alt="U"><span class="energy-number">0</span></span></div>';
                 
                 const energyMap = {
-                    'Universal': { icon: 'src/assets/images/expeditionandgames/TCG Images/universalergy.webp', class: 'universal' },
-                    'Hydronergy': { icon: 'src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp', class: 'hydro' }, 
-                    'Hydro': { icon: 'src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp', class: 'hydro' }, 
-                    'Pyronergy': { icon: 'src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp', class: 'pyro' },
-                    'Pyro': { icon: 'src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp', class: 'pyro' },
-                    'Cryonergy': { icon: 'src/assets/images/expeditionandgames/TCG Images/cryergy.webp', class: 'cryo' },
-                    'Cryo': { icon: 'src/assets/images/expeditionandgames/TCG Images/cryergy.webp', class: 'cryo' },
-                    'Geonergy': { icon: 'src/assets/images/expeditionandgames/TCG Images/geoergy.webp', class: 'geo' },
-                    'Geo': { icon: 'src/assets/images/expeditionandgames/TCG Images/geoergy.webp', class: 'geo' },
-                    'Shadergy': { icon: 'src/assets/images/expeditionandgames/TCG Images/shadergy.webp', class: 'shadow' },
-                    'Shadow': { icon: 'src/assets/images/expeditionandgames/TCG Images/shadergy.webp', class: 'shadow' }
+                    'Universal': { icon: './src/assets/images/expeditionandgames/TCG Images/universalergy.webp', class: 'universal' },
+                    'Hydronergy': { icon: './src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp', class: 'hydro' }, 
+                    'Hydro': { icon: './src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp', class: 'hydro' }, 
+                    'Pyronergy': { icon: './src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp', class: 'pyro' },
+                    'Pyro': { icon: './src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp', class: 'pyro' },
+                    'Cryonergy': { icon: './src/assets/images/expeditionandgames/TCG Images/cryergy.webp', class: 'cryo' },
+                    'Cryo': { icon: './src/assets/images/expeditionandgames/TCG Images/cryergy.webp', class: 'cryo' },
+                    'Geonergy': { icon: './src/assets/images/expeditionandgames/TCG Images/geoergy.webp', class: 'geo' },
+                    'Geo': { icon: './src/assets/images/expeditionandgames/TCG Images/geoergy.webp', class: 'geo' },
+                    'Shadergy': { icon: './src/assets/images/expeditionandgames/TCG Images/shadergy.webp', class: 'shadow' },
+                    'Shadow': { icon: './src/assets/images/expeditionandgames/TCG Images/shadergy.webp', class: 'shadow' }
                 };
                 
                 let symbols = [];
@@ -1482,7 +1482,7 @@
                             symbols.push(`<span class="energy-icon-wrapper energy-${energyInfo.class}"><img src="${energyInfo.icon}" class="energy-icon" alt="${energyType}"><span class="energy-number">${amount}</span></span>`);
                         } else {
                             // Fallback for unknown energy types
-                            symbols.push(`<span class="energy-icon-wrapper energy-universal"><img src="src/assets/images/expeditionandgames/TCG Images/universalergy.webp" class="energy-icon" alt="?"><span class="energy-number">${amount}</span></span>`);
+                            symbols.push(`<span class="energy-icon-wrapper energy-universal"><img src="./src/assets/images/expeditionandgames/TCG Images/universalergy.webp" class="energy-icon" alt="?"><span class="energy-number">${amount}</span></span>`);
                         }
                     }
                 });
@@ -2015,67 +2015,67 @@
             if (card.cost && card.cost !== 'Free') {
                 const energyMap = {
                     'Universal': { 
-                        icon: 'src/assets/images/expeditionandgames/TCG Images/universalergy.webp',
+                        icon: './src/assets/images/expeditionandgames/TCG Images/universalergy.webp',
                         textColor: '#000000',
                         strokeColor: '#ffffff',
                         useStroke: true
                     },
                     'Hydronergy': { 
-                        icon: 'src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp',
+                        icon: './src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp',
                         textColor: '#1e3a8a',
                         strokeColor: '#1e3a8a',
                         useStroke: false
                     }, 
                     'Hydro': { 
-                        icon: 'src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp',
+                        icon: './src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp',
                         textColor: '#1e3a8a',
                         strokeColor: '#1e3a8a',
                         useStroke: false
                     }, 
                     'Pyronergy': { 
-                        icon: 'src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp',
+                        icon: './src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp',
                         textColor: '#ff8c00',
                         strokeColor: '#ffd700',
                         useStroke: true
                     },
                     'Pyro': { 
-                        icon: 'src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp',
+                        icon: './src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp',
                         textColor: '#ff8c00',
                         strokeColor: '#ffd700',
                         useStroke: true
                     },
                     'Cryonergy': { 
-                        icon: 'src/assets/images/expeditionandgames/TCG Images/cryergy.webp',
+                        icon: './src/assets/images/expeditionandgames/TCG Images/cryergy.webp',
                         textColor: '#1e3a8a',
                         strokeColor: '#000000',
                         useStroke: true
                     },
                     'Cryo': { 
-                        icon: 'src/assets/images/expeditionandgames/TCG Images/cryergy.webp',
+                        icon: './src/assets/images/expeditionandgames/TCG Images/cryergy.webp',
                         textColor: '#1e3a8a',
                         strokeColor: '#000000',
                         useStroke: true
                     },
                     'Geonergy': { 
-                        icon: 'src/assets/images/expeditionandgames/TCG Images/geoergy.webp',
+                        icon: './src/assets/images/expeditionandgames/TCG Images/geoergy.webp',
                         textColor: '#ffd700',
                         strokeColor: '#b8860b',
                         useStroke: true
                     },
                     'Geo': { 
-                        icon: 'src/assets/images/expeditionandgames/TCG Images/geoergy.webp',
+                        icon: './src/assets/images/expeditionandgames/TCG Images/geoergy.webp',
                         textColor: '#ffd700',
                         strokeColor: '#b8860b',
                         useStroke: true
                     },
                     'Shadergy': { 
-                        icon: 'src/assets/images/expeditionandgames/TCG Images/shadergy.webp',
+                        icon: './src/assets/images/expeditionandgames/TCG Images/shadergy.webp',
                         textColor: '#ffffff',
                         strokeColor: '#000000',
                         useStroke: true
                     },
                     'Shadow': { 
-                        icon: 'src/assets/images/expeditionandgames/TCG Images/shadergy.webp',
+                        icon: './src/assets/images/expeditionandgames/TCG Images/shadergy.webp',
                         textColor: '#ffffff',
                         strokeColor: '#000000',
                         useStroke: true
