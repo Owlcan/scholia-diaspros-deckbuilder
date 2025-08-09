@@ -2367,65 +2367,51 @@
                 }
                 
                 if (card.atk !== undefined && card.atk !== null) {
-                    // Try multiple paths for atkicon.png - prioritize the specified path
-                    const possiblePaths = [
-                        'src/assets/images/expeditionandgames/TCG Images/atkicon.png',
-                        './src/assets/images/expeditionandgames/TCG Images/atkicon.png',
-                        './atkicon.png',
-                        'atkicon.png',
-                        'src/assets/images/expeditionandgames/TCG Images/atkicontop.webp',
-                        './src/assets/images/expeditionandgames/TCG Images/atkicontop.webp'
-                    ];
-                    
-                    let atkImg = null;
-                    for (const path of possiblePaths) {
-                        try {
-                            atkImg = new Image();
-                            atkImg.crossOrigin = 'anonymous';
-                            
-                            await new Promise((resolve, reject) => {
-                                atkImg.onload = () => {
-                                    console.log(`ATK icon loaded successfully from: ${path}`);
-                                    resolve();
-                                };
-                                atkImg.onerror = () => {
-                                    console.log(`Failed to load ATK icon from: ${path}`);
-                                    reject();
-                                };
-                                atkImg.src = path;
-                            });
-                            
-                            // If we get here, the image loaded successfully
-                            break;
-                        } catch (e) {
-                            console.log(`Path ${path} failed, trying next...`);
-                            atkImg = null;
-                            continue;
-                        }
-                    }
-                    
-                    if (atkImg && atkImg.complete && atkImg.naturalWidth > 0) {
+                    // Load ATK icon from the correct path
+                    try {
+                        const atkImg = new Image();
+                        atkImg.crossOrigin = 'anonymous';
+                        
+                        await new Promise((resolve, reject) => {
+                            atkImg.onload = () => {
+                                console.log('ATK icon loaded successfully');
+                                resolve();
+                            };
+                            atkImg.onerror = () => {
+                                console.log('Failed to load ATK icon');
+                                reject();
+                            };
+                            atkImg.src = 'src/assets/images/expeditionandgames/TCG Images/atkicontop.png';
+                        });
+                        
                         // Draw ATK icon at higher resolution for better quality
-                        const atkSize = 40; // Increased from 32 for better quality
-                        const atkX = 256 - atkSize/2; // Center better
+                        const atkSize = 40;
+                        const atkX = 256 - atkSize/2;
                         const atkY = statsY + 16 - atkSize/2;
                         
                         ctx.drawImage(atkImg, atkX, atkY, atkSize, atkSize);
                         
                         // Draw ATK text with better positioning
-                        ctx.fillStyle = '#000000';
-                        ctx.font = 'bold 16px serif'; // Increased font size
+                        ctx.fillStyle = '#05082c';
+                        ctx.font = 'bold 16px serif';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
-                        ctx.strokeStyle = 'white';
-                        ctx.lineWidth = 2;
                         
                         // Position text slightly higher in the icon for better alignment
-                        ctx.strokeText(card.atk.toString(), atkX + atkSize/2, atkY + atkSize/2 + 1);
                         ctx.fillText(card.atk.toString(), atkX + atkSize/2, atkY + atkSize/2 + 1);
-                    } else {
-                        console.error('ALL ATK ICON PATHS FAILED - CANNOT RENDER CARD');
-                        throw new Error('Failed to load atkicon.png from any path');
+                    } catch (e) {
+                        console.error('ATK icon failed to load, using fallback');
+                        // Fallback to simple circle
+                        ctx.fillStyle = '#ea580c';
+                        ctx.beginPath();
+                        ctx.arc(256, statsY + 16, 20, 0, 2 * Math.PI);
+                        ctx.fill();
+                        
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 14px serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(card.atk.toString(), 256, statsY + 16);
                     }
                 }
                 
