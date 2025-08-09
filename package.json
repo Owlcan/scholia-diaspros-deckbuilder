@@ -29,12 +29,12 @@
   "dependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YOUR_USERNAME/scholia-diaspros-deckbuilder.git"
+    "url": "git+https://github.com/Owlcan/scholia-diaspros-deckbuilder.git"
   },
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/scholia-diaspros-deckbuilder/issues"
+    "url": "https://github.com/Owlcan/scholia-diaspros-deckbuilder/issues"
   },
-  "homepage": "https://YOUR_USERNAME.github.io/scholia-diaspros-deckbuilder/",
+  "homepage": "https://Owlcan.github.io/scholia-diaspros-deckbuilder/",
   "engines": {
     "node": ">=14.0.0"
   }
