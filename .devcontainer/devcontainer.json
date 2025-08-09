@@ -1,0 +1,43 @@
+{
+  "name": "Scholia Diaspros Deckbuilder",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:18",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.live-server",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "ms-vscode.hexeditor"
+      ],
+      "settings": {
+        "liveServer.settings.port": 3000,
+        "liveServer.settings.root": "/",
+        "liveServer.settings.CustomBrowser": "chrome",
+        "liveServer.settings.donotShowInfoMsg": true,
+        "files.associations": {
+          "*.js": "javascript"
+        },
+        "editor.formatOnSave": true
+      }
+    }
+  },
+  
+  "forwardPorts": [3000, 8080],
+  "portsAttributes": {
+    "3000": {
+      "label": "Application",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  
+  "postCreateCommand": "npm install",
+  "postStartCommand": "npm start",
+  
+  "remoteUser": "node"
+}

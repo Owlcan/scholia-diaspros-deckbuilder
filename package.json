@@ -1,0 +1,41 @@
+{
+  "name": "scholia-diaspros-deckbuilder",
+  "version": "2.1.0",
+  "description": "A comprehensive web-based card database and deck builder for the Scholia Diaspros Trading Card Game",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx live-server --port=3000 --open=/index.html",
+    "dev": "npx live-server --port=3000 --open=/index.html --watch=index.html,TCG-cards.js",
+    "build": "echo 'No build step required - static site'",
+    "serve": "npx http-server -p 3000 -o",
+    "preview": "npx live-server --port=8080 --open=/index.html --no-browser"
+  },
+  "keywords": [
+    "tcg",
+    "trading-card-game",
+    "deck-builder",
+    "card-database",
+    "fantasy",
+    "web-app",
+    "javascript",
+    "html5"
+  ],
+  "author": "Lulu",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YOUR_USERNAME/scholia-diaspros-deckbuilder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/scholia-diaspros-deckbuilder/issues"
+  },
+  "homepage": "https://YOUR_USERNAME.github.io/scholia-diaspros-deckbuilder/",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
