@@ -749,7 +749,7 @@
         }
         
         .hp-circle {
-            background-image: url('src/assets/images/expeditionandgames/TCG Images/HPshield.png');
+            background-image: url('./src/assets/images/expeditionandgames/TCG Images/HPshield.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -759,7 +759,7 @@
         
         .atk-circle {
             position: relative;
-            background-image: url('src/assets/images/expeditionandgames/TCG Images/atkicontop.png');
+            background-image: url('./src/assets/images/expeditionandgames/TCG Images/atkicontop.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -2323,7 +2323,7 @@
                 if (card.hp !== undefined && card.hp !== null) {
                     // Load and draw HP shield icon using data URL
                     try {
-                        const hpIconUrl = 'src/assets/images/expeditionandgames/TCG Images/HPshield.webp';
+                        const hpIconUrl = './src/assets/images/expeditionandgames/TCG Images/HPshield.webp';
                         const hpDataUrl = await loadImageAsDataURL(hpIconUrl);
                         
                         const hpImg = new Image();
@@ -2381,7 +2381,7 @@
                                 console.log('Failed to load ATK icon');
                                 reject();
                             };
-                            atkImg.src = 'src/assets/images/expeditionandgames/TCG Images/atkicontop.png';
+                            atkImg.src = './src/assets/images/expeditionandgames/TCG Images/atkicontop.png';
                         });
                         
                         // Draw ATK icon at higher resolution for better quality
