@@ -2317,7 +2317,7 @@ const initialCardData = [
                     name: "Shadergy Generation",
                     description: "Tap: Add 1 Shadergy energy to your pool."
                 },
-                image_url: "src/assets/images/expeditionandgames/TCG Images/diapers/boosters/shadeenergy (1).webp"
+                image_url: "src/assets/images/expeditionandgames/TCG Images/diapers/boosters/shadeenergy (5).webp"
             },
             {
                 id: 'booster_009',
@@ -2810,7 +2810,7 @@ const initialCardData = [
                 id: 'student_101',
                 name: "Taisiat, Time-Skipper",
                 type: "Student Card",
-                cost: "1 Universal, 1 Cryoergy, 1 Pyroergy",
+                cost: "1 Universal, 1 Cryo, 1 Pyro",
                 hp: 3,
                 atk: 3,
                 ability: {

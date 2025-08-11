@@ -1,0 +1,3025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diaper School TCG Card Database</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Diaper School TCG Card Database and Deckbuilder">
+    <meta name="theme-color" content="#daac17">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Deckbuilder">
+    <meta name="msapplication-TileColor" content="#2c2619">
+    <meta name="msapplication-config" content="./browserconfig.xml">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- App Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        /* Cache buster - v2.1 */
+        :root {
+            --gold: #daac17;
+            --gold-light: #fae791;
+            --gold-dark: #97740a;
+            --parchment: #2C2614;
+            --parchment-dark: #1E1C12;
+            --ink: #ebc20e;
+            --ink2: #8f770d;
+            --accent: #b47018;
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+        
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background-color: #2c2619;
+            background-image: url('https://www.transparenttextures.com/patterns/dark-wood.png');
+            color: var(--ink);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--parchment);
+            background-image: url('https://ik.imagekit.io/owlcan/techpattern2.png');
+            background-blend-mode: overlay;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px var(--shadow);
+            border: 12px solid var(--gold-dark);
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--accent);
+            font-family: 'MedievalSharp', cursive;
+            font-size: 3.5rem;
+            margin: 10px 0 30px;
+            text-shadow: 2px 2px 4px var(--shadow);
+            position: relative;
+        }
+        
+        h1::after {
+            content: "";
+            display: block;
+            width: 80%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--gold), transparent);
+            margin: 15px auto;
+        }
+        
+        .controls-section {
+            background-color: var(--parchment-dark);
+            border: 2px solid var(--gold-dark);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 2px 4px var(--shadow);
+        }
+        
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-label {
+            color: var(--gold);
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .filter-input, .filter-select {
+            background-color: var(--parchment);
+            border: 2px solid var(--gold-dark);
+            border-radius: 4px;
+            color: var(--ink);
+            padding: 8px 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 8px rgba(218, 172, 23, 0.3);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            background: linear-gradient(to bottom, var(--gold-light), var(--gold));
+            border: 2px solid var(--gold-dark);
+            color: var(--parchment);
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(to bottom, var(--gold), var(--gold-dark));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(to bottom, #666, #444);
+            color: var(--gold-light);
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(to bottom, #555, #333);
+        }
+        
+        .stats-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            background-color: var(--parchment-dark);
+            border: 2px solid var(--gold-dark);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            background-color: var(--parchment);
+            border: 1px solid var(--gold-dark);
+            border-radius: 6px;
+            padding: 15px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--gold);
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px var(--shadow);
+        }
+        
+        .stat-label {
+            color: var(--ink2);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .deck-builder-section {
+            background-color: var(--parchment-dark);
+            border: 2px solid var(--gold-dark);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .deck-builder-section h2 {
+            color: var(--accent);
+            font-family: 'MedievalSharp', cursive;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .deck-controls {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .deck-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .deck-stats span {
+            background-color: var(--parchment);
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--gold-dark);
+            color: var(--ink);
+            font-weight: 600;
+        }
+        
+        .deck-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        
+        .deck-view {
+            border-top: 2px solid var(--gold-dark);
+            padding-top: 20px;
+        }
+        
+        .deck-guidelines {
+            background-color: var(--parchment);
+            border: 1px solid var(--gold-dark);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .deck-guidelines h3 {
+            color: var(--gold);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .deck-guidelines ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .deck-guidelines li {
+            margin-bottom: 5px;
+            color: var(--ink);
+        }
+        
+        .deck-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        
+        .deck-card {
+            background-color: var(--parchment);
+            border: 2px solid var(--gold-dark);
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+        }
+        
+        .deck-card-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        
+        .deck-card-name {
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 5px;
+        }
+        
+        .deck-card-cost {
+            background-color: var(--gold-dark);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        
+        .add-to-deck-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .add-to-deck-btn:hover {
+            background-color: var(--gold-dark);
+        }
+        
+        .add-to-deck-btn:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        
+        .card-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .add-to-deck-side-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 10px;
+        }
+        
+        .add-to-deck-side-btn:hover {
+            background-color: var(--gold-dark);
+            transform: scale(1.1);
+        }
+        
+        .add-to-deck-side-btn:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        
+        .card-subtype-bottom {
+            font-style: italic;
+            font-size: 1rem;
+            color: var(--ink);
+            font-weight: 600;
+            text-align: center;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, var(--parchment-dark), var(--parchment));
+            border-bottom: 2px solid var(--gold-dark);
+            border-top: 1px solid var(--gold-dark);
+            text-shadow: 1px 1px 2px var(--shadow);
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            background-color: var(--parchment);
+            border: 3px solid var(--gold-dark);
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px var(--shadow);
+            cursor: pointer;
+            position: relative;
+            width: 280px;
+            height: 420px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px var(--shadow);
+            border-color: var(--gold);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+            padding: 8px 15px 4px;
+            border-bottom: 2px solid var(--gold-dark);
+            position: relative;
+            min-height: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        
+        .card-name-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .card-name {
+            color: var(--parchment);
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 1px 1px 2px var(--shadow);
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .card-type-indicator {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.6rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px var(--shadow);
+        }
+        
+        .card-type-indicator.student {
+            color: #4a90e2;
+        }
+        
+        .card-type-indicator.monster {
+            color: #e74c3c;
+        }
+        
+        .card-subtype {
+            font-style: italic;
+            font-size: 0.85rem;
+            color: var(--parchment-dark);
+            margin-top: 0px;
+            opacity: 0.8;
+        }
+        
+        .card-cost {
+            display: flex;
+            gap: 2px;
+            flex-wrap: wrap;
+            align-items: center;
+            max-width: 60px;
+            justify-content: flex-end;
+        }
+        
+        .card-corner-info {
+            position: absolute;
+            top: 8px; /* Back to original position for main app */
+            right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 2px;
+            z-index: 10;
+        }
+        
+        .card-cost-corner {
+            display: flex;
+            gap: 1px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        
+        .cost-symbols {
+            display: flex;
+            align-items: center;
+            gap: 1px;
+        }
+        
+        .cost-single {
+            justify-content: center;
+        }
+        
+        .cost-single .energy-symbol {
+            font-size: 0.85rem;
+            padding: 3px 5px;
+            min-width: 18px;
+            border-radius: 4px;
+        }
+        
+        .cost-double {
+            justify-content: flex-end;
+            gap: 2px;
+        }
+        
+        .cost-double .energy-symbol {
+            font-size: 0.75rem;
+            padding: 2px 4px;
+            min-width: 15px;
+            border-radius: 3px;
+        }
+        
+        .cost-multiple {
+            position: relative;
+            width: 35px;
+            height: 30px;
+        }
+        
+        .cost-multiple .energy-symbol {
+            position: absolute;
+            font-size: 0.6rem;
+            padding: 1px 2px;
+            min-width: 12px;
+            border-radius: 2px;
+        }
+        
+        .cost-multiple .energy-symbol:nth-child(1) {
+            top: 0;
+            right: 0;
+        }
+        
+        .cost-multiple .energy-symbol:nth-child(2) {
+            top: 12px;
+            right: 8px;
+        }
+        
+        .cost-multiple .energy-symbol:nth-child(3) {
+            top: 12px;
+            right: -4px;
+        }
+        
+        .cost-multiple .energy-symbol:nth-child(4) {
+            top: 24px;
+            right: 0;
+        }
+        
+        .card-cost-corner .energy-symbol {
+            font-size: 0.7rem;
+            padding: 1px 2px;
+            min-width: 12px;
+            border-radius: 2px;
+            line-height: 1;
+        }
+        
+        .energy-symbol {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            padding: 2px 4px;
+            border-radius: 4px;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        /* New energy icon system */
+        .energy-icon-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 1px;
+        }
+        
+        .energy-icon {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .energy-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'MedievalSharp', cursive;
+            font-weight: bold;
+            text-align: center;
+            pointer-events: none;
+            font-size: 10px;
+        }
+        
+        /* Energy type specific text colors and strokes */
+        .energy-universal .energy-number {
+            color: #000000;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        .energy-hydro .energy-number {
+            color: #1e3a8a;
+            text-shadow: none;
+        }
+        
+        .energy-pyro .energy-number {
+            color: #ff8c00;
+            text-shadow: 1px 1px 2px rgba(255, 215, 0, 0.8);
+        }
+        
+        .energy-cryo .energy-number {
+            color: #1e3a8a;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+        
+        .energy-geo .energy-number {
+            color: #ffd700;
+            text-shadow: 1px 1px 2px rgba(184, 134, 11, 0.8);
+        }
+        
+        .energy-shadow .energy-number {
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+        
+        /* Size adjustments for different cost layouts */
+        .cost-single .energy-icon-wrapper {
+            width: 42px;
+            height: 42px;
+        }
+        
+        .cost-single .energy-number {
+            font-size: 21px;
+        }
+        
+        .cost-double .energy-icon-wrapper {
+            width: 36px;
+            height: 36px;
+        }
+        
+        .cost-double .energy-number {
+            font-size: 18px;
+        }
+        
+        .cost-multiple .energy-icon-wrapper {
+            width: 30px;
+            height: 30px;
+        }
+        
+        .cost-multiple .energy-number {
+            font-size: 15px;
+        }
+        
+        .card-cost-corner .energy-icon-wrapper {
+            width: 27px;
+            height: 27px;
+        }
+        
+        .card-cost-corner .energy-number {
+            font-size: 13px;
+        }
+        
+        /* Legacy energy symbol styles (disabled - backgrounds removed to prevent conflict with new icon system) */
+        .energy-U { color: #c0c0c0; }
+        .energy-H { color: #4a90e2; }
+        .energy-P { color: #e74c3c; }
+        .energy-C { color: #5dade2; }
+        .energy-G { color: #58d68d; }
+        .energy-S { color: #8e44ad; }
+        
+        .card-image-container {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            border-bottom: 2px solid var(--gold-dark);
+        }
+        
+        .art-cycling-controls {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            z-index: 10;
+            font-size: 0.8rem;
+        }
+        
+        .art-cycle-btn {
+            background: var(--gold-dark);
+            color: var(--ink);
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        
+        .art-cycle-btn:hover {
+            background: var(--gold);
+            transform: scale(1.1);
+        }
+        
+        .art-indicator {
+            color: var(--ink);
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background-color: var(--parchment-dark);
+        }
+        
+        .card-image-placeholder {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(135deg, var(--parchment-dark), var(--parchment));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ink2);
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--gold-dark);
+        }
+        
+        .card-stats {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+        
+        .stat-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            border: 2px solid rgba(10, 3, 68, 0.4);
+            color: rgb(5, 14, 102);
+        }
+        
+        .hp-circle {
+            background-image: url('src/assets/images/expeditionandgames/TCG Images/HPshield.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: none;
+            color: #081844 !important; /* Dark blue for better visibility - force override */
+        }
+        
+        .atk-circle {
+            position: relative;
+            background-image: url('src/assets/images/expeditionandgames/TCG Images/atkicontop.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: none;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 25%; /* Move text UP - reduced from 30% to 15% */
+            color: #05082c !important; /* Force black text */
+        }
+        
+        .card-body {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .meta-tag {
+            background-color: var(--gold-dark);
+            color: var(--parchment);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .stats-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .stat-badge {
+            background-color: #dc2626;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .hp-badge { background-color: #dc2626; }
+        .atk-badge { background-color: #ea580c; }
+        
+        .ability-section {
+            background-color: var(--parchment-dark);
+            border: 1px solid var(--gold-dark);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .ability-name {
+            color: var(--gold);
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        .ability-description {
+            color: var(--ink);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        
+        .card-btn {
+            background: linear-gradient(to bottom, var(--gold-light), var(--gold));
+            border: 1px solid var(--gold-dark);
+            color: var(--parchment);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .card-btn:hover {
+            background: linear-gradient(to bottom, var(--gold), var(--gold-dark));
+        }
+        
+        .card-btn-danger {
+            background: linear-gradient(to bottom, #ff6b6b, #ff5252);
+            border-color: #d32f2f;
+        }
+        
+        .card-btn-danger:hover {
+            background: linear-gradient(to bottom, #ff5252, #d32f2f);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background-color: var(--parchment);
+            border: 3px solid var(--gold-dark);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+            padding: 20px;
+            border-bottom: 2px solid var(--gold-dark);
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .modal-title {
+            color: var(--parchment);
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 1px 1px 2px var(--shadow);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid var(--gold-dark);
+            margin-bottom: 15px;
+        }
+        
+        .modal-actions {
+            background-color: var(--parchment-dark);
+            padding: 15px 20px;
+            border-top: 2px solid var(--gold-dark);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .form-section {
+            padding: 20px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            color: var(--gold);
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            background-color: var(--parchment-dark);
+            border: 2px solid var(--gold-dark);
+            border-radius: 4px;
+            color: var(--ink);
+            padding: 8px 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            font-family: 'Cormorant Garamond', serif;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 8px rgba(218, 172, 23, 0.3);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gold-dark);
+            border-radius: 50%;
+            border-top-color: var(--gold);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--ink2);
+        }
+        
+        .no-results h3 {
+            color: var(--gold);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .tier-minion { border-left: 4px solid #ef4444; }
+        .tier-utility { border-left: 4px solid #3b82f6; }
+        .tier-medium { border-left: 4px solid #10b981; }
+        .tier-boss { border-left: 4px solid #f59e0b; }
+        .tier-legendary { border-left: 4px solid #8b5cf6; }
+        
+        /* Energy type styles (backgrounds removed to prevent conflict with new icon system) */
+        .energy-universal { color: #374151; }
+        .energy-cryo { color: #1e3a8a; }
+        .energy-pyro { color: #7f1d1d; }
+        .energy-hydro { color: #065f46; }
+        .energy-geo { color: #92400e; }
+        .energy-shadergy { color: #e0e7ff; border: 1px solid #6d28d9; }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                border-width: 6px;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <h1>🎴 Diaper School TCG Database</h1>
+        
+        <!-- Controls Section -->
+        <div class="controls-section">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Search Cards</label>
+                    <input type="text" id="searchInput" class="filter-input" placeholder="Search by name, type, race...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Type Filter</label>
+                    <select id="typeFilter" class="filter-select">
+                        <option value="">All Types</option>
+                        <option value="Monster Card">Monster Cards</option>
+                        <option value="Student Card">Student Cards</option>
+                        <option value="Spell Card">Spell Cards</option>
+                        <option value="Item Card">Item Cards</option>
+                        <option value="Artifact Card">Artifact Cards</option>
+                        <option value="Booster Card">Booster Cards</option>
+                        <option value="Patron Card">Patron Cards</option>
+                        <option value="Environment Card">Environment Cards</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Tier Filter</label>
+                    <select id="tierFilter" class="filter-select">
+                        <option value="">All Tiers</option>
+                        <option value="Minion">Minion</option>
+                        <option value="Utility">Utility</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Boss">Boss</option>
+                        <option value="Legendary">Legendary</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Energy Filter</label>
+                    <select id="energyFilter" class="filter-select">
+                        <option value="">All Energy</option>
+                        <option value="Universal">Universal</option>
+                        <option value="Cryo">Cryo</option>
+                        <option value="Pyro">Pyro</option>
+                        <option value="Hydro">Hydro</option>
+                        <option value="Geo">Geo</option>
+                        <option value="Shadergy">Shadergy</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="exportBtn" class="btn btn-secondary">💾 Export Data</button>
+                <button id="importBtn" class="btn btn-secondary">📁 Import Data</button>
+            </div>
+        </div>
+        
+        <!-- Stats Display -->
+        <div class="stats-display">
+            <div class="stat-item">
+                <div class="stat-number" id="totalCards">0</div>
+                <div class="stat-label">Total Cards</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="monsterCards">0</div>
+                <div class="stat-label">Monsters</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="studentCards">0</div>
+                <div class="stat-label">Students</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="spellCards">0</div>
+                <div class="stat-label">Spells</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="boosterCards">0</div>
+                <div class="stat-label">Boosters</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="itemCards">0</div>
+                <div class="stat-label">Items</div>
+            </div>
+        </div>
+        
+        <!-- Deck Builder Section -->
+        <div class="deck-builder-section">
+            <h2>🏗️ Deck Builder</h2>
+            <div class="deck-controls">
+                <div class="deck-stats">
+                    <span class="deck-count">Deck: <span id="deckCount">0</span>/55</span>
+                    <span class="deck-cost">Avg Cost: <span id="avgCost">0</span></span>
+                    <span class="deck-types">M/S: <span id="deckMonsters">0</span> | Spells: <span id="deckSpells">0</span> | Items: <span id="deckItems">0</span></span>
+                </div>
+                <div class="deck-actions">
+                    <button class="btn btn-secondary" id="clearDeckBtn">🗑️ Clear Deck</button>
+                    <button class="btn btn-secondary" id="saveDeckBtn">💾 Save Deck</button>
+                    <button class="btn btn-secondary" id="loadDeckBtn">📁 Load Deck</button>
+                    <button class="btn" id="exportPngBtn" style="display: none;">🖼️ Export PNG Cards</button>
+                    <button class="btn" id="toggleDeckBtn">👁️ Toggle Deck View</button>
+                </div>
+            </div>
+            
+            <div id="deckView" class="deck-view" style="display: none;">
+                <div class="deck-guidelines">
+                    <h3>📋 Deck Building Guidelines</h3>
+                    <ul>
+                        <li><strong>Deck Size:</strong> Exactly 55 cards</li>
+                        <li><strong>Monster/Student Cards:</strong> 20-30 recommended for balanced combat</li>
+                        <li><strong>Spell Cards:</strong> 5-15 for versatility and control</li>
+                        <li><strong>Item/Artifact Cards:</strong> 5-15 for utility and enhancement</li>
+                        <li><strong>Booster Cards:</strong> 10-15 for energy management</li>
+                        <li><strong>Energy Curve:</strong> Include low-cost cards (1-2) for early game</li>
+                        <li><strong>Win Conditions:</strong> Include powerful late-game cards (5+ cost)</li>
+                        <li><strong>Synergy:</strong> Build around racial or ability themes</li>
+                    </ul>
+                </div>
+                
+                <div id="deckContainer" class="deck-container">
+                    <!-- Deck cards will be displayed here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading -->
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: var(--gold);">Loading cards...</p>
+        </div>
+        
+        <!-- No Results -->
+        <div id="noResults" class="no-results" style="display: none;">
+            <h3>No cards found</h3>
+            <p>Try adjusting your search criteria or add some new cards to get started.</p>
+        </div>
+        
+        <!-- Cards Display -->
+        <div id="cardsContainer" class="cards-grid">
+            <!-- Cards will be rendered here -->
+        </div>
+    </div>
+    
+    <!-- Card Detail Modal -->
+    <div id="cardModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalCardTitle">Card Details</h2>
+            </div>
+            <div class="modal-body" id="modalCardContent">
+                <!-- Card details will be loaded here -->
+            </div>
+            <div class="modal-actions">
+                <button id="printCardBtn" class="btn">🖼️ Print as PNG</button>
+                <button id="closeModalBtn" class="btn btn-secondary">✖️ Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Import card data from external file
+        const script = document.createElement('script');
+        script.src = './TCG-cards.js';
+        script.type = 'text/javascript';
+        document.head.appendChild(script);
+
+        // Wait for cards to load, then initialize
+        script.onload = function() {
+            init();
+        };
+
+        // Global state
+        let cards = [];
+        let filteredCards = [];
+        let playerDeck = [];
+        let deckVisible = false;
+        let currentModalCard = null;
+        let currentModalCardIndex = 0;
+
+        // DOM elements
+        const cardsContainer = document.getElementById('cardsContainer');
+        const searchInput = document.getElementById('searchInput');
+        const typeFilter = document.getElementById('typeFilter');
+        const tierFilter = document.getElementById('tierFilter');
+        const energyFilter = document.getElementById('energyFilter');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const noResults = document.getElementById('noResults');
+        
+        // Modals
+        const cardModal = document.getElementById('cardModal');
+        const printCardBtn = document.getElementById('printCardBtn');
+        
+        // Stats
+        const totalCards = document.getElementById('totalCards');
+        const monsterCards = document.getElementById('monsterCards');
+        const studentCards = document.getElementById('studentCards');
+        const spellCards = document.getElementById('spellCards');
+        const boosterCards = document.getElementById('boosterCards');
+        const itemCards = document.getElementById('itemCards');
+        
+        // Deck Builder elements
+        const deckCount = document.getElementById('deckCount');
+        const avgCost = document.getElementById('avgCost');
+        const deckMonsters = document.getElementById('deckMonsters');
+        const deckSpells = document.getElementById('deckSpells');
+        const deckItems = document.getElementById('deckItems');
+        const deckContainer = document.getElementById('deckContainer');
+        const deckView = document.getElementById('deckView');
+        const toggleDeckBtn = document.getElementById('toggleDeckBtn');
+        const clearDeckBtn = document.getElementById('clearDeckBtn');
+        const saveDeckBtn = document.getElementById('saveDeckBtn');
+        const loadDeckBtn = document.getElementById('loadDeckBtn');
+        const exportPngBtn = document.getElementById('exportPngBtn');
+        
+        // Utility functions
+        function getEnergyClass(cost) {
+            if (!cost) return 'energy-universal';
+            const costLower = cost.toLowerCase();
+            if (costLower.includes('universal')) return 'energy-universal';
+            if (costLower.includes('cryo')) return 'energy-cryo';
+            if (costLower.includes('pyro')) return 'energy-pyro';
+            if (costLower.includes('hydro')) return 'energy-hydro';
+            if (costLower.includes('geo')) return 'energy-geo';
+            if (costLower.includes('shadergy')) return 'energy-shadergy';
+            return 'energy-universal';
+        }
+        
+        function getTierClass(tier) {
+            if (!tier) return '';
+            switch (tier.toLowerCase()) {
+                case 'minion': return 'tier-minion';
+                case 'utility': return 'tier-utility';
+                case 'medium': return 'tier-medium';
+                case 'boss': return 'tier-boss';
+                case 'legendary': return 'tier-legendary';
+                default: return '';
+            }
+        }
+        
+        function generateId() {
+            return 'card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        // Parse stat bonuses from ability descriptions
+        function parseStatBonuses(description) {
+            if (!description) return { atk: 0, hp: 0 };
+            
+            const bonuses = { atk: 0, hp: 0 };
+            
+            // Match +X ATK patterns
+            const atkMatch = description.match(/\+(\d+)\s*(ATK|Attack)/i);
+            if (atkMatch) {
+                bonuses.atk = parseInt(atkMatch[1]);
+            }
+            
+            // Match +X HP patterns  
+            const hpMatch = description.match(/\+(\d+)\s*(HP|Health)/i);
+            if (hpMatch) {
+                bonuses.hp = parseInt(hpMatch[1]);
+            }
+            
+            return bonuses;
+        }
+        
+        // Art variant system - now fully automatic!
+        // No more manual hard-coding needed - the system automatically detects numbered variants
+        
+        /* OLD HARDCODED SYSTEM - NO LONGER NEEDED
+        const artVariants = {
+            // This has been replaced with automatic detection
+        };
+        */
+
+        // Track current art variant index for each card instance
+        const currentArtIndex = {};
+
+        // Cache for art variants to avoid repeated checks
+        const artVariantsCache = new Map();
+        
+        // Check if an image exists by trying to load it
+        function checkImageExists(imagePath) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = imagePath;
+            });
+        }
+        
+        // Preload art variants for a card (async, but caches result)
+        async function preloadArtVariants(card) {
+            const cacheKey = card.id;
+            if (artVariantsCache.has(cacheKey)) {
+                return artVariantsCache.get(cacheKey);
+            }
+            
+            const baseImagePath = card.image_url || card.image_placeholder;
+            if (!baseImagePath) {
+                artVariantsCache.set(cacheKey, [baseImagePath]);
+                return [baseImagePath];
+            }
+            
+            // Extract components
+            const pathParts = baseImagePath.split('/');
+            const filename = pathParts.pop();
+            const basePath = pathParts.join('/') + '/';
+            
+            // Match filename pattern: "name.ext" or "name (number).ext"
+            const match = filename.match(/^(.+?)(?:\s*\((\d+)\))?\.(webp|png|jpg|jpeg)$/i);
+            if (!match) {
+                artVariantsCache.set(cacheKey, [baseImagePath]);
+                return [baseImagePath];
+            }
+            
+            const baseName = match[1];
+            const currentNumber = match[2] ? parseInt(match[2]) : 0;
+            const extension = match[3];
+            const isStartingNumbered = currentNumber > 0;
+            
+            const validVariants = [];
+            
+            // NEW LOGIC: Only check for unnumbered base IF the card's default image is NOT numbered
+            // This respects your choice when you set a numbered variant as the default
+            if (!isStartingNumbered) {
+                // Card starts with unnumbered file - include it and look for numbered variants
+                const unnumberedPath = `${basePath}${baseName}.${extension}`;
+                if (await checkImageExists(unnumberedPath)) {
+                    validVariants.push(unnumberedPath);
+                }
+            }
+            
+            // Always check for numbered variants
+            const checkPromises = [];
+            for (let i = 1; i <= 30; i++) { // Check up to 30 variants
+                const variantPath = `${basePath}${baseName} (${i}).${extension}`;
+                checkPromises.push(
+                    checkImageExists(variantPath).then(exists => 
+                        exists ? variantPath : null
+                    )
+                );
+            }
+            
+            // Wait for all checks to complete
+            const results = await Promise.all(checkPromises);
+            const existingVariants = results.filter(path => path !== null);
+            
+            // Add existing numbered variants to our list
+            existingVariants.forEach(variant => {
+                if (!validVariants.includes(variant)) {
+                    validVariants.push(variant);
+                }
+            });
+            
+            // If we have no variants at all, fallback to the original path
+            if (validVariants.length === 0) {
+                validVariants.push(baseImagePath);
+            }
+            
+            // Cache the result
+            artVariantsCache.set(cacheKey, validVariants);
+            return validVariants;
+        }
+        
+        // Get available art variants for a card - synchronous (uses cache)
+        function getArtVariants(card) {
+            const cacheKey = card.id;
+            return artVariantsCache.get(cacheKey) || [card.image_url || card.image_placeholder];
+        }
+
+        // Cycle to next art variant
+        function cycleArt(cardId, cardIndex, direction = 1) {
+            const card = initialCardData.find(c => c.id === cardId);
+            if (!card) return;
+            
+            const variants = getArtVariants(card);
+            if (variants.length <= 1) return;
+            
+            const uniqueId = `${cardId}_${cardIndex}`;
+            const currentIndex = currentArtIndex[uniqueId] || 0;
+            const newIndex = (currentIndex + direction + variants.length) % variants.length;
+            
+            currentArtIndex[uniqueId] = newIndex;
+            
+            // Update the image in the DOM
+            const cardElement = document.querySelector(`[data-card-id="${cardId}"][data-card-index="${cardIndex}"]`);
+            if (cardElement) {
+                const imgElement = cardElement.querySelector('.card-image');
+                if (imgElement) {
+                    imgElement.src = variants[newIndex];
+                }
+                
+                // Update art indicator
+                const indicator = cardElement.querySelector('.art-indicator');
+                if (indicator) {
+                    indicator.textContent = `${newIndex + 1}/${variants.length}`;
+                }
+            }
+        }
+
+        // Card rendering functions
+        function renderCard(card, cardIndex) {
+            const variants = getArtVariants(card);
+            const uniqueCardId = `${card.id}_${cardIndex}`; // Make each rendered card unique
+            const currentIndex = currentArtIndex[uniqueCardId] || 0;
+            const imageUrl = variants[currentIndex] || card.image_url || card.image_placeholder;
+            
+            // Parse cost string to create energy symbols using energy icons
+            function renderCost(costString) {
+                if (!costString || costString === 'Free') return '<div class="cost-symbols cost-single"><span class="energy-icon-wrapper"><img src="src/assets/images/expeditionandgames/TCG Images/universalergy.webp" class="energy-icon" alt="U"><span class="energy-number">0</span></span></div>';
+                
+                const energyMap = {
+                    'Universal': { icon: 'src/assets/images/expeditionandgames/TCG Images/universalergy.webp', class: 'universal' },
+                    'Hydronergy': { icon: 'src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp', class: 'hydro' }, 
+                    'Hydro': { icon: 'src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp', class: 'hydro' }, 
+                    'Pyronergy': { icon: 'src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp', class: 'pyro' },
+                    'Pyro': { icon: 'src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp', class: 'pyro' },
+                    'Cryonergy': { icon: 'src/assets/images/expeditionandgames/TCG Images/cryergy.webp', class: 'cryo' },
+                    'Cryo': { icon: 'src/assets/images/expeditionandgames/TCG Images/cryergy.webp', class: 'cryo' },
+                    'Geonergy': { icon: 'src/assets/images/expeditionandgames/TCG Images/geoergy.webp', class: 'geo' },
+                    'Geo': { icon: 'src/assets/images/expeditionandgames/TCG Images/geoergy.webp', class: 'geo' },
+                    'Shadergy': { icon: 'src/assets/images/expeditionandgames/TCG Images/shadergy.webp', class: 'shadow' },
+                    'Shadow': { icon: 'src/assets/images/expeditionandgames/TCG Images/shadergy.webp', class: 'shadow' }
+                };
+                
+                let symbols = [];
+                const parts = costString.split(',');
+                
+                parts.forEach(part => {
+                    const trimmed = part.trim();
+                    const match = trimmed.match(/(\d+)\s*(.+)/);
+                    if (match) {
+                        const amount = parseInt(match[1]);
+                        const energyType = match[2].trim();
+                        const energyInfo = energyMap[energyType];
+                        
+                        if (energyInfo) {
+                            symbols.push(`<span class="energy-icon-wrapper energy-${energyInfo.class}"><img src="${energyInfo.icon}" class="energy-icon" alt="${energyType}"><span class="energy-number">${amount}</span></span>`);
+                        } else {
+                            // Fallback for unknown energy types
+                            symbols.push(`<span class="energy-icon-wrapper energy-universal"><img src="src/assets/images/expeditionandgames/TCG Images/universalergy.webp" class="energy-icon" alt="?"><span class="energy-number">${amount}</span></span>`);
+                        }
+                    }
+                });
+                
+                // Add class based on number of symbols
+                const costClass = parts.length === 1 ? 'cost-single' : parts.length === 2 ? 'cost-double' : 'cost-multiple';
+                return `<div class="cost-symbols ${costClass}">${symbols.join('')}</div>`;
+            }
+            
+            // Get type indicator
+            function getTypeIndicator(card) {
+                const cost = card.cost ? `${renderCost(card.cost)}` : '';
+                return cost ? `<div class="card-corner-info">${cost}</div>` : '';
+            }
+            
+            // Get subtitle text
+            function getSubtitle(card) {
+                if (card.type?.includes('Student')) return 'Student';
+                if (card.type?.includes('Monster') && card.race) return card.race;
+                if (card.type?.includes('Artifact')) return 'Artifact';
+                if (card.type?.includes('Spell')) return 'Spell Card';
+                if (card.type?.includes('Booster')) return 'Booster';
+                if (card.type?.includes('Item')) return 'Item';
+                return '';
+            }
+            
+            // Parse stat bonuses from ability descriptions
+            const bonuses = parseStatBonuses(card.ability?.description);
+            
+            // Show base stats if they exist, otherwise show only bonuses if they exist
+            const displayAtk = (card.atk !== undefined && card.atk !== null) ? card.atk : (bonuses.atk > 0 ? bonuses.atk : null);
+            const displayHp = (card.hp !== undefined && card.hp !== null) ? card.hp : (bonuses.hp > 0 ? bonuses.hp : null);
+            const hasStats = displayHp !== null || displayAtk !== null;
+            
+            return `
+                <div class="card-container">
+                    <div class="card ${getTierClass(card.tier)}" data-card-id="${card.id}" data-card-index="${cardIndex}">
+                        ${getTypeIndicator(card)}
+                        <div class="card-header">
+                            <div class="card-name-row">
+                                <h3 class="card-name">${card.name}</h3>
+                            </div>
+                        </div>
+                        
+                        <div class="card-image-container">
+                            ${variants.length > 1 ? `
+                                <div class="art-cycling-controls">
+                                    <button class="art-cycle-btn prev" onclick="event.stopPropagation(); cycleArt('${card.id}', ${cardIndex}, -1)" title="Previous Art">‹</button>
+                                    <span class="art-indicator">${currentIndex + 1}/${variants.length}</span>
+                                    <button class="art-cycle-btn next" onclick="event.stopPropagation(); cycleArt('${card.id}', ${cardIndex}, 1)" title="Next Art">›</button>
+                                </div>
+                            ` : ''}
+                            ${imageUrl ? 
+                                `<img src="${imageUrl}" alt="${card.name}" class="card-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                 <div class="card-image-placeholder" style="display: none;">🎴 ${card.name}</div>` :
+                                `<div class="card-image-placeholder">🎴 ${card.name}</div>`
+                            }
+                            
+            ${hasStats ? `
+                                <div class="card-stats">
+                                    ${displayHp !== null ? `<div class="stat-circle hp-circle">${(card.hp === undefined || card.hp === null) && bonuses.hp > 0 ? '+' : ''}${displayHp}</div>` : '<div></div>'}
+                                    ${displayAtk !== null ? `<div class="stat-circle atk-circle">${(card.atk === undefined || card.atk === null) && bonuses.atk > 0 ? '+' : ''}${displayAtk}</div>` : '<div></div>'}
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${getSubtitle(card) ? `<div class="card-subtype-bottom">${getSubtitle(card)}</div>` : ''}
+                        
+                        <div class="card-body">
+                            ${card.ability && card.ability.name ? `
+                                <div class="ability-section">
+                                    <div class="ability-name">${card.ability.name}</div>
+                                    <div class="ability-description">${card.ability.description || ''}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <button onclick="event.stopPropagation(); addToDeck('${card.id}')" class="add-to-deck-side-btn" id="addBtn_${uniqueCardId}">➕</button>
+                </div>
+            `;
+        }
+        
+        function renderCards() {
+            loadingSpinner.style.display = 'none';
+            
+            if (filteredCards.length === 0) {
+                cardsContainer.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            noResults.style.display = 'none';
+            
+            // Remove any existing event listeners
+            cardsContainer.removeEventListener('click', handleCardClick);
+            
+            cardsContainer.innerHTML = filteredCards.map((card, index) => renderCard(card, index)).join('');
+            
+            // Set up event delegation for card clicks
+            cardsContainer.addEventListener('click', handleCardClick);
+        }
+        
+        function handleCardClick(event) {
+            // Find the closest card element
+            const cardElement = event.target.closest('.card');
+            if (!cardElement) return;
+            
+            // Get the card data
+            const cardIndex = parseInt(cardElement.dataset.cardIndex);
+            const card = filteredCards[cardIndex];
+            
+            if (card) {
+                showCardDetails(card, cardIndex);
+            }
+        }
+        
+        function updateStats() {
+            totalCards.textContent = cards.length;
+            monsterCards.textContent = cards.filter(c => c.type === 'Monster Card').length;
+            studentCards.textContent = cards.filter(c => c.type === 'Student Card').length;
+            spellCards.textContent = cards.filter(c => c.type === 'Spell Card').length;
+            boosterCards.textContent = cards.filter(c => c.type === 'Booster Card').length;
+            itemCards.textContent = cards.filter(c => c.type === 'Item Card' || c.type === 'Artifact Card' || c.type === 'Patron Card').length;
+        }
+        
+        // Deck Builder Functions
+        function addToDeck(cardId) {
+            if (playerDeck.length >= 55) {
+                alert('Deck is full! Maximum 55 cards allowed.');
+                return;
+            }
+            
+            const card = cards.find(c => c.id === cardId);
+            if (card) {
+                playerDeck.push({...card, deckId: Date.now() + Math.random()});
+                updateDeckStats();
+                updateDeckDisplay();
+                updateAddButtons();
+            }
+        }
+        
+        function removeFromDeck(deckId) {
+            playerDeck = playerDeck.filter(card => card.deckId !== deckId);
+            updateDeckStats();
+            updateDeckDisplay();
+            updateAddButtons();
+        }
+        
+        function removeFromDeckById(cardId) {
+            // Find and remove one instance of the card with this ID
+            const index = playerDeck.findIndex(card => card.id === cardId);
+            if (index !== -1) {
+                playerDeck.splice(index, 1);
+                updateDeckStats();
+                updateDeckDisplay();
+                updateAddButtons();
+            }
+        }
+        
+        function clearDeck() {
+            if (confirm('Are you sure you want to clear your deck?')) {
+                playerDeck = [];
+                updateDeckStats();
+                updateDeckDisplay();
+                updateAddButtons();
+            }
+        }
+        
+        function updateDeckStats() {
+            deckCount.textContent = playerDeck.length;
+            
+            // Calculate average cost
+            const totalCost = playerDeck.reduce((sum, card) => {
+                const cost = card.cost ? parseFloat(card.cost.match(/\d+/)?.[0] || 0) : 0;
+                return sum + cost;
+            }, 0);
+            avgCost.textContent = playerDeck.length > 0 ? (totalCost / playerDeck.length).toFixed(1) : '0';
+            
+            // Count card types
+            const monsters = playerDeck.filter(c => c.type === 'Monster Card' || c.type === 'Student Card').length;
+            const spells = playerDeck.filter(c => c.type === 'Spell Card').length;
+            const items = playerDeck.filter(c => c.type === 'Item Card' || c.type === 'Artifact Card' || c.type === 'Booster Card').length;
+            
+            deckMonsters.textContent = monsters;
+            deckSpells.textContent = spells;
+            deckItems.textContent = items;
+            
+            // Show/hide export button based on deck completeness
+            if (playerDeck.length === 55) {
+                exportPngBtn.style.display = 'inline-block';
+            } else {
+                exportPngBtn.style.display = 'none';
+            }
+        }
+        
+        function updateDeckDisplay() {
+            if (!deckVisible) return;
+            
+            // Group cards by ID and count
+            const cardCounts = {};
+            playerDeck.forEach(card => {
+                if (cardCounts[card.id]) {
+                    cardCounts[card.id].count++;
+                    cardCounts[card.id].deckIds.push(card.deckId);
+                } else {
+                    cardCounts[card.id] = { card: card, count: 1, deckIds: [card.deckId] };
+                }
+            });
+            
+            deckContainer.innerHTML = Object.values(cardCounts).map(item => `
+                <div class="deck-card">
+                    <div class="deck-card-count">${item.count}</div>
+                    <div class="deck-card-name">${item.card.name}</div>
+                    <div class="deck-card-cost">${item.card.cost || 'Free'}</div>
+                    <button onclick="removeFromDeckById('${item.card.id}')" class="card-btn card-btn-danger" style="margin-top: 5px;">Remove One</button>
+                </div>
+            `).join('');
+        }
+        
+        function updateAddButtons() {
+            filteredCards.forEach((card, index) => {
+                const uniqueCardId = `${card.id}_${index}`;
+                const btn = document.getElementById(`addBtn_${uniqueCardId}`);
+                if (btn) {
+                    const inDeck = playerDeck.filter(c => c.id === card.id).length;
+                    if (inDeck >= 3) {  // Max 3 copies per card
+                        btn.disabled = true;
+                        btn.textContent = '✓ Max Copies';
+                    } else if (playerDeck.length >= 55) {
+                        btn.disabled = true;
+                        btn.textContent = '⚠️ Deck Full';
+                    } else {
+                        btn.disabled = false;
+                        btn.textContent = `➕ ${inDeck > 0 ? `(${inDeck})` : ''}`;
+                    }
+                }
+            });
+        }
+        
+        function toggleDeckView() {
+            deckVisible = !deckVisible;
+            deckView.style.display = deckVisible ? 'block' : 'none';
+            toggleDeckBtn.textContent = deckVisible ? '🙈 Hide Deck' : '👁️ Show Deck';
+            if (deckVisible) {
+                updateDeckDisplay();
+            }
+        }
+        
+        function saveDeck() {
+            if (playerDeck.length === 0) {
+                alert('No cards in deck to save!');
+                return;
+            }
+            
+            const deckData = JSON.stringify(playerDeck, null, 2);
+            const dataBlob = new Blob([deckData], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'diaper-school-deck.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function loadDeck() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const importedDeck = JSON.parse(e.target.result);
+                            if (Array.isArray(importedDeck)) {
+                                playerDeck = importedDeck;
+                                updateDeckStats();
+                                updateDeckDisplay();
+                                updateAddButtons();
+                                alert('Deck loaded successfully!');
+                            }
+                        } catch (error) {
+                            alert('Error reading deck file: ' + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+        
+        async function exportDeckAsPNG() {
+            if (playerDeck.length !== 55) {
+                alert('Deck must have exactly 55 cards to export as PNG!');
+                return;
+            }
+            
+            // Show progress modal
+            const progressModal = document.createElement('div');
+            progressModal.className = 'modal active';
+            progressModal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Exporting Deck as PNG...</h2>
+                    </div>
+                    <div class="modal-body" style="text-align: center;">
+                        <div class="spinner"></div>
+                        <p id="exportProgress">Preparing cards... (0/55)</p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(progressModal);
+            
+            try {
+                const zip = new JSZip();
+                
+                for (let i = 0; i < playerDeck.length; i++) {
+                    const card = playerDeck[i];
+                    document.getElementById('exportProgress').textContent = `Rendering card ${i + 1}/55: ${card.name}`;
+                    
+                    const canvas = await renderCardToPNG(card, i);
+                    
+                    // Convert canvas to blob and add to zip
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
+                    const cardNumber = String(i + 1).padStart(2, '0');
+                    const fileName = `${cardNumber}_${card.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+                    zip.file(fileName, blob);
+                    
+                    // Small delay to prevent browser freezing
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+                
+                // Generate and download zip file
+                document.getElementById('exportProgress').textContent = 'Creating download file...';
+                const zipBlob = await zip.generateAsync({type: "blob"});
+                const url = URL.createObjectURL(zipBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'diaper-school-deck-cards.zip';
+                link.click();
+                URL.revokeObjectURL(url);
+                
+                document.body.removeChild(progressModal);
+                alert('Deck exported successfully! Check your downloads folder.');
+                
+            } catch (error) {
+                document.body.removeChild(progressModal);
+                alert('Error exporting deck: ' + error.message);
+                console.error('Export error:', error);
+            }
+        }
+        
+        async function printSingleCard() {
+            if (!currentModalCard) {
+                alert('No card selected to print!');
+                return;
+            }
+            
+            try {
+                // Show a simple loading indicator
+                printCardBtn.textContent = '🔄 Rendering...';
+                printCardBtn.disabled = true;
+                
+                const canvas = await renderCardToPNG(currentModalCard, currentModalCardIndex);
+                
+                // Convert canvas to blob and download
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${currentModalCard.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+                link.click();
+                URL.revokeObjectURL(url);
+                
+                // Reset button
+                printCardBtn.textContent = '🖼️ Print as PNG';
+                printCardBtn.disabled = false;
+                
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #4CAF50; color: white; padding: 15px; border-radius: 5px; z-index: 10000; font-weight: bold;';
+                successMsg.textContent = '✅ Card exported successfully!';
+                document.body.appendChild(successMsg);
+                setTimeout(() => document.body.removeChild(successMsg), 3000);
+                
+            } catch (error) {
+                printCardBtn.textContent = '🖼️ Print as PNG';
+                printCardBtn.disabled = false;
+                alert('Error printing card: ' + error.message);
+                console.error('Print error:', error);
+            }
+        }
+        
+        // Helper function to load image as data URL to avoid taint issues
+        async function loadImageAsDataURL(imageUrl) {
+            try {
+                // If it's already a data URL, return it as is
+                if (imageUrl.startsWith('data:')) {
+                    return imageUrl;
+                }
+                
+                // For local files, try to fetch and convert to data URL
+                if (!imageUrl.startsWith('http')) {
+                    const response = await fetch(imageUrl);
+                    const blob = await response.blob();
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+                }
+                
+                // For external URLs, we'll have to use a different approach
+                // Try to load directly first
+                return imageUrl;
+            } catch (e) {
+                console.log('Failed to convert image to data URL:', e);
+                return imageUrl; // Fall back to original URL
+            }
+        }
+
+        async function renderCardToPNG(card, cardIndex = 0) {
+            // Create a temporary canvas for this card
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set card dimensions to match the UI cards proportionally (scale up for high-res)
+            const scale = 3; // Scale factor for high resolution
+            canvas.width = 280 * scale;   // Match UI card width
+            canvas.height = 420 * scale;  // Match UI card height
+            
+            // Scale the context for high-resolution drawing
+            ctx.scale(scale, scale);
+            
+            // Check if this is a deluxe full-art card
+            const variants = getArtVariants(card);
+            const uniqueId = `${card.id}_${cardIndex}`;
+            const currentIndex = currentArtIndex[uniqueId] || 0;
+            const currentImageUrl = variants[currentIndex] || card.image_url || card.image_placeholder;
+            const isDeluxeMode = card.is_full_card && card.deluxe_art_url;
+            
+            // First, draw the base background (always needed)
+            ctx.fillStyle = '#2C2614'; // --parchment
+            ctx.fillRect(0, 0, 280, 420);
+            
+            // Draw deluxe full-art background if in deluxe mode
+            if (isDeluxeMode) {
+                try {
+                    const deluxeDataUrl = await loadImageAsDataURL(card.deluxe_art_url);
+                    const deluxeImg = new Image();
+                    await new Promise((resolve, reject) => {
+                        deluxeImg.onload = resolve;
+                        deluxeImg.onerror = reject;
+                        deluxeImg.src = deluxeDataUrl;
+                    });
+                    
+                    // Draw the full deluxe art as background covering the entire card
+                    // This breaks out of the normal image frame and fills the whole card
+                    ctx.drawImage(deluxeImg, 0, 0, 280, 420);
+                    
+                    // Add a very subtle overlay to ensure text readability without obscuring the art
+                    ctx.fillStyle = 'rgba(44, 38, 20, 0.08)'; // Very light parchment overlay
+                    ctx.fillRect(0, 0, 280, 420);
+                } catch (e) {
+                    console.log('Deluxe art failed to load, falling back to normal mode:', e);
+                    // Fall back already handled by base background above
+                }
+            }
+            
+            // Draw card border (matching .card border)
+            ctx.strokeStyle = '#97740a'; // --gold-dark
+            ctx.lineWidth = 3;
+            ctx.strokeRect(1.5, 1.5, 277, 417);
+            
+            // Draw card header background (with transparency for deluxe mode)
+            const headerGradient = ctx.createLinearGradient(0, 0, 0, 44);
+            if (isDeluxeMode) {
+                // Semi-transparent header for deluxe mode to show art underneath
+                headerGradient.addColorStop(0, 'rgba(151, 116, 10, 0.85)'); // --gold-dark with transparency
+                headerGradient.addColorStop(1, 'rgba(218, 172, 23, 0.85)'); // --gold with transparency
+            } else {
+                headerGradient.addColorStop(0, '#97740a'); // --gold-dark
+                headerGradient.addColorStop(1, '#daac17'); // --gold
+            }
+            ctx.fillStyle = headerGradient;
+            ctx.fillRect(3, 3, 274, 44);
+            
+            // Add extra border for deluxe mode text readability
+            if (isDeluxeMode) {
+                ctx.strokeStyle = '#5a4706'; // Darker gold border
+                ctx.lineWidth = 1;
+                ctx.strokeRect(3, 3, 274, 44);
+            }
+            
+            // Draw header border
+            ctx.strokeStyle = '#97740a';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(3, 47, 274, 1);
+            
+            // Draw card name with enhanced styling for deluxe mode
+            ctx.fillStyle = '#2C2614'; // --parchment
+            ctx.font = 'bold 16px serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            
+            if (isDeluxeMode) {
+                // Add text shadow and glow for deluxe mode
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                ctx.shadowBlur = 4;
+                
+                // Draw glow effect
+                ctx.strokeStyle = 'rgba(218, 172, 23, 0.6)'; // Gold glow
+                ctx.lineWidth = 3;
+                ctx.strokeText(card.name, 12, 25);
+            }
+            
+            ctx.fillText(card.name, 12, 25);
+            
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.shadowBlur = 0;
+            
+            // Draw cost symbols with proper positioning based on count using energy icons
+            if (card.cost && card.cost !== 'Free') {
+                const energyMap = {
+                    'Universal': { 
+                        icon: 'src/assets/images/expeditionandgames/TCG Images/universalergy.webp',
+                        textColor: '#000000',
+                        strokeColor: '#ffffff',
+                        useStroke: true
+                    },
+                    'Hydronergy': { 
+                        icon: 'src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp',
+                        textColor: '#1e3a8a',
+                        strokeColor: '#1e3a8a',
+                        useStroke: false
+                    }, 
+                    'Hydro': { 
+                        icon: 'src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp',
+                        textColor: '#1e3a8a',
+                        strokeColor: '#1e3a8a',
+                        useStroke: false
+                    }, 
+                    'Pyronergy': { 
+                        icon: 'src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp',
+                        textColor: '#ff8c00',
+                        strokeColor: '#ffd700',
+                        useStroke: true
+                    },
+                    'Pyro': { 
+                        icon: 'src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp',
+                        textColor: '#ff8c00',
+                        strokeColor: '#ffd700',
+                        useStroke: true
+                    },
+                    'Cryonergy': { 
+                        icon: 'src/assets/images/expeditionandgames/TCG Images/cryergy.webp',
+                        textColor: '#1e3a8a',
+                        strokeColor: '#000000',
+                        useStroke: true
+                    },
+                    'Cryo': { 
+                        icon: 'src/assets/images/expeditionandgames/TCG Images/cryergy.webp',
+                        textColor: '#1e3a8a',
+                        strokeColor: '#000000',
+                        useStroke: true
+                    },
+                    'Geonergy': { 
+                        icon: 'src/assets/images/expeditionandgames/TCG Images/geoergy.webp',
+                        textColor: '#ffd700',
+                        strokeColor: '#b8860b',
+                        useStroke: true
+                    },
+                    'Geo': { 
+                        icon: 'src/assets/images/expeditionandgames/TCG Images/geoergy.webp',
+                        textColor: '#ffd700',
+                        strokeColor: '#b8860b',
+                        useStroke: true
+                    },
+                    'Shadergy': { 
+                        icon: 'src/assets/images/expeditionandgames/TCG Images/shadergy.webp',
+                        textColor: '#ffffff',
+                        strokeColor: '#000000',
+                        useStroke: true
+                    },
+                    'Shadow': { 
+                        icon: 'src/assets/images/expeditionandgames/TCG Images/shadergy.webp',
+                        textColor: '#ffffff',
+                        strokeColor: '#000000',
+                        useStroke: true
+                    }
+                };
+                
+                // Set better image rendering quality for energy icons
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                
+                const parts = card.cost.split(',');
+                const costY = 25; // Centered in 44px header height
+                
+                // Different sizing based on number of symbols - increased to match CSS scaling
+                let iconSize, fontSize, gap;
+                if (parts.length === 1) {
+                    iconSize = 38; fontSize = 20; gap = 0; // Matches CSS .cost-single
+                } else if (parts.length === 2) {
+                    iconSize = 28; fontSize = 15; gap = 2; // Matches CSS .cost-double  
+                } else {
+                    // 3+ costs - use better triangular arrangement that fits within bounds
+                    iconSize = 22; fontSize = 12; // Slightly larger for better visibility
+                    
+                    // Better triangular positioning for 3+ symbols - ensure they fit
+                    const positions = [
+                        { x: 250, y: 15 },   // top - better centered
+                        { x: 238, y: 35 },   // bottom left - more spacing
+                        { x: 262, y: 35 },   // bottom right - more spacing  
+                        { x: 250, y: 42 }    // bottom center for 4th if needed
+                    ];
+                    
+                    // Process each energy cost with icons
+                    for (let index = 0; index < parts.length && index < positions.length; index++) {
+                        const part = parts[index];
+                        const trimmed = part.trim();
+                        const match = trimmed.match(/(\d+)\s*(.+)/);
+                        if (match) {
+                            const amount = parseInt(match[1]);
+                            const energyType = match[2].trim();
+                            const energyInfo = energyMap[energyType];
+                            
+                            if (energyInfo) {
+                                try {
+                                    const iconDataUrl = await loadImageAsDataURL(energyInfo.icon);
+                                    const iconImg = new Image();
+                                    await new Promise((resolve, reject) => {
+                                        iconImg.onload = resolve;
+                                        iconImg.onerror = reject;
+                                        iconImg.src = iconDataUrl;
+                                    });
+                                    
+                                    const pos = positions[index];
+                                    
+                                    // Draw energy icon
+                                    ctx.drawImage(iconImg, pos.x - iconSize/2, pos.y - iconSize/2, iconSize, iconSize);
+                                    
+                                    // Draw number centered on icon
+                                    ctx.font = `bold ${fontSize}px serif`;
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'middle';
+                                    
+                                    if (energyInfo.useStroke) {
+                                        ctx.strokeStyle = energyInfo.strokeColor;
+                                        ctx.lineWidth = 2;
+                                        ctx.strokeText(amount.toString(), pos.x, pos.y);
+                                    }
+                                    
+                                    ctx.fillStyle = energyInfo.textColor;
+                                    ctx.fillText(amount.toString(), pos.x, pos.y);
+                                } catch (e) {
+                                    console.log(`Failed to load energy icon for ${energyType}, using fallback`);
+                                    // Fallback to old colored box system
+                                    ctx.fillStyle = '#d1d5db';
+                                    ctx.fillRect(pos.x - iconSize/2, pos.y - iconSize/2, iconSize, iconSize);
+                                    ctx.fillStyle = '#374151';
+                                    ctx.font = `bold ${fontSize}px serif`;
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'middle';
+                                    ctx.fillText(amount.toString(), pos.x, pos.y);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Only render linear layout for 1-2 cost cards
+                if (parts.length <= 2) {
+                    const totalWidth = (parts.length * iconSize) + ((parts.length - 1) * gap);
+                    let startX = 280 - totalWidth - 8;
+                    
+                    // Process each energy cost with icons
+                    for (let index = 0; index < parts.length; index++) {
+                        const part = parts[index];
+                        const trimmed = part.trim();
+                        const match = trimmed.match(/(\d+)\s*(.+)/);
+                        if (match) {
+                            const amount = parseInt(match[1]);
+                            const energyType = match[2].trim();
+                            const energyInfo = energyMap[energyType];
+                            
+                            if (energyInfo) {
+                                try {
+                                    const iconDataUrl = await loadImageAsDataURL(energyInfo.icon);
+                                    const iconImg = new Image();
+                                    await new Promise((resolve, reject) => {
+                                        iconImg.onload = resolve;
+                                        iconImg.onerror = reject;
+                                        iconImg.src = iconDataUrl;
+                                    });
+                                    
+                                    const iconX = startX + (index * (iconSize + gap));
+                                    const iconY = costY - iconSize/2;
+                                    
+                                    // Draw energy icon
+                                    ctx.drawImage(iconImg, iconX, iconY, iconSize, iconSize);
+                                    
+                                    // Draw number centered on icon
+                                    ctx.font = `bold ${fontSize}px serif`;
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'middle';
+                                    
+                                    if (energyInfo.useStroke) {
+                                        ctx.strokeStyle = energyInfo.strokeColor;
+                                        ctx.lineWidth = 2;
+                                        ctx.strokeText(amount.toString(), iconX + iconSize/2, costY);
+                                    }
+                                    
+                                    ctx.fillStyle = energyInfo.textColor;
+                                    ctx.fillText(amount.toString(), iconX + iconSize/2, costY);
+                                } catch (e) {
+                                    console.log(`Failed to load energy icon for ${energyType}, using fallback`);
+                                    // Fallback to old colored box system
+                                    const iconX = startX + (index * (iconSize + gap));
+                                    ctx.fillStyle = '#d1d5db';
+                                    ctx.fillRect(iconX, costY - iconSize/2, iconSize, iconSize);
+                                    ctx.fillStyle = '#374151';
+                                    ctx.font = `bold ${fontSize}px serif`;
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'middle';
+                                    ctx.fillText(amount.toString(), iconX + iconSize/2, costY);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Reset image smoothing to default
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'medium';
+            }
+            
+            // Draw image container area (matching .card-image-container)
+            const imageY = 48;
+            const imageHeight = 220;
+            
+            // Only draw image background in normal mode, skip in deluxe mode to show full art
+            if (!isDeluxeMode) {
+                ctx.fillStyle = '#1E1C12'; // --parchment-dark (image background)
+                ctx.fillRect(3, imageY, 274, imageHeight);
+            }
+            
+            // Draw image border
+            ctx.strokeStyle = '#97740a';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(3, imageY + imageHeight, 274, 1);
+            
+            // Draw card image if available - using currently selected art variant
+            // Skip drawing the normal image in deluxe mode since the full art already covers the card
+            if (!isDeluxeMode && (card.image_url || card.image_placeholder)) {
+                try {
+                    // Get the current art variant for this card
+                    const variants = getArtVariants(card);
+                    const uniqueId = `${card.id}_${cardIndex}`;
+                    const currentIndex = currentArtIndex[uniqueId] || 0;
+                    const imageUrl = variants[currentIndex] || card.image_url || card.image_placeholder;
+                    
+                    const dataUrl = await loadImageAsDataURL(imageUrl);
+                    
+                    const img = new Image();
+                    await new Promise((resolve, reject) => {
+                        img.onload = () => {
+                            console.log('Image loaded successfully as data URL:', imageUrl);
+                            resolve();
+                        };
+                        img.onerror = (e) => {
+                            console.log('Image failed to load even as data URL:', imageUrl, e);
+                            reject(e);
+                        };
+                        img.src = dataUrl; // Use the data URL instead of original URL
+                    });
+                    
+                    // Calculate image positioning to fit within container (object-fit: contain)
+                    const imgArea = {
+                        x: 3,
+                        y: imageY,
+                        width: 274,
+                        height: imageHeight
+                    };
+                    
+                    const imgAspect = img.width / img.height;
+                    const areaAspect = imgArea.width / imgArea.height;
+                    
+                    let drawWidth, drawHeight, drawX, drawY;
+                    if (imgAspect > areaAspect) {
+                        drawWidth = imgArea.width;
+                        drawHeight = imgArea.width / imgAspect;
+                        drawX = imgArea.x;
+                        drawY = imgArea.y + (imgArea.height - drawHeight) / 2;
+                    } else {
+                        drawHeight = imgArea.height;
+                        drawWidth = imgArea.height * imgAspect;
+                        drawX = imgArea.x + (imgArea.width - drawWidth) / 2;
+                        drawY = imgArea.y;
+                    }
+                    
+                    console.log('Drawing image at:', drawX, drawY, drawWidth, drawHeight);
+                    ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+                } catch (e) {
+                    console.log('Image loading failed completely, using placeholder for:', card.name, e);
+                    // Only use placeholder if image completely fails
+                    ctx.fillStyle = '#8f770d'; // --ink2
+                    ctx.font = '16px serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('🎴 ' + card.name, 140, imageY + imageHeight/2);
+                }
+            } else if (!isDeluxeMode) {
+                // Only show placeholder text if not in deluxe mode
+                ctx.fillStyle = '#8f770d'; // --ink2
+                ctx.font = '16px serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🎴 ' + card.name, 140, imageY + imageHeight/2);
+            }
+            
+            // Draw HP/ATK stat icons if available (using custom images)
+            const hasStats = (card.hp !== undefined && card.hp !== null) || (card.atk !== undefined && card.atk !== null);
+            if (hasStats) {
+                // Set better image rendering quality
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                
+                const statsY = imageY + 8;
+                
+                if (card.hp !== undefined && card.hp !== null) {
+                    // Load and draw HP shield icon using data URL
+                    try {
+                        const hpIconUrl = 'src/assets/images/expeditionandgames/TCG Images/HPshield.webp';
+                        const hpDataUrl = await loadImageAsDataURL(hpIconUrl);
+                        
+                        const hpImg = new Image();
+                        await new Promise((resolve, reject) => {
+                            hpImg.onload = resolve;
+                            hpImg.onerror = reject;
+                            hpImg.src = hpDataUrl;
+                        });
+                        
+                        // Draw HP shield at higher resolution for better quality
+                        const hpSize = 40; // Increased from 32 for better quality
+                        const hpX = 24 - hpSize/2; // Center on original position
+                        const hpY = statsY + 16 - hpSize/2;
+                        ctx.drawImage(hpImg, hpX, hpY, hpSize, hpSize);
+                        
+                        // HP text (centered on shield) - dark blue for better visibility
+                        ctx.fillStyle = '#061A54'; // Dark blue color
+                        ctx.font = 'bold 16px serif'; // Increased font size
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.strokeStyle = 'white';
+                        ctx.lineWidth = 2;
+                        ctx.strokeText(card.hp.toString(), 24, statsY + 16);
+                        ctx.fillText(card.hp.toString(), 24, statsY + 16);
+                    } catch (e) {
+                        console.log('HP shield image failed to load, using fallback');
+                        // Fallback to circle if image fails
+                        ctx.fillStyle = '#e74c3c';
+                        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.arc(24, statsY + 16, 20, 0, 2 * Math.PI); // Slightly larger
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 14px serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(card.hp.toString(), 24, statsY + 16);
+                    }
+                }
+                
+                if (card.atk !== undefined && card.atk !== null) {
+                    // Try multiple paths for atkicon.png - prioritize the specified path
+                    const possiblePaths = [
+                        'src/assets/images/expeditionandgames/TCG Images/atkicon.png',
+                        './src/assets/images/expeditionandgames/TCG Images/atkicon.png',
+                        './atkicon.png',
+                        'atkicon.png',
+                        'src/assets/images/expeditionandgames/TCG Images/atkicontop.webp',
+                        './src/assets/images/expeditionandgames/TCG Images/atkicontop.webp'
+                    ];
+                    
+                    let atkImg = null;
+                    for (const path of possiblePaths) {
+                        try {
+                            atkImg = new Image();
+                            atkImg.crossOrigin = 'anonymous';
+                            
+                            await new Promise((resolve, reject) => {
+                                atkImg.onload = () => {
+                                    console.log(`ATK icon loaded successfully from: ${path}`);
+                                    resolve();
+                                };
+                                atkImg.onerror = () => {
+                                    console.log(`Failed to load ATK icon from: ${path}`);
+                                    reject();
+                                };
+                                atkImg.src = path;
+                            });
+                            
+                            // If we get here, the image loaded successfully
+                            break;
+                        } catch (e) {
+                            console.log(`Path ${path} failed, trying next...`);
+                            atkImg = null;
+                            continue;
+                        }
+                    }
+                    
+                    if (atkImg && atkImg.complete && atkImg.naturalWidth > 0) {
+                        // Draw ATK icon at higher resolution for better quality
+                        const atkSize = 40; // Increased from 32 for better quality
+                        const atkX = 256 - atkSize/2; // Center better
+                        const atkY = statsY + 16 - atkSize/2;
+                        
+                        ctx.drawImage(atkImg, atkX, atkY, atkSize, atkSize);
+                        
+                        // Draw ATK text with better positioning
+                        ctx.fillStyle = '#000000';
+                        ctx.font = 'bold 16px serif'; // Increased font size
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.strokeStyle = 'white';
+                        ctx.lineWidth = 2;
+                        
+                        // Position text slightly higher in the icon for better alignment
+                        ctx.strokeText(card.atk.toString(), atkX + atkSize/2, atkY + atkSize/2 + 1);
+                        ctx.fillText(card.atk.toString(), atkX + atkSize/2, atkY + atkSize/2 + 1);
+                    } else {
+                        console.error('ALL ATK ICON PATHS FAILED - CANNOT RENDER CARD');
+                        throw new Error('Failed to load atkicon.png from any path');
+                    }
+                }
+                
+                // Reset image smoothing to default
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'medium';
+            }
+            
+            // Draw subtype bottom section if available (matching .card-subtype-bottom)
+            let currentY = imageY + imageHeight + 2;
+            let subtypeText = '';
+            
+            if (card.type?.includes('Student')) subtypeText = 'Student';
+            else if (card.type?.includes('Monster') && card.race) subtypeText = card.race;
+            else if (card.type?.includes('Artifact')) subtypeText = 'Artifact';
+            else if (card.type?.includes('Spell')) subtypeText = 'Spell Card';
+            else if (card.type?.includes('Booster')) subtypeText = 'Booster';
+            else if (card.type?.includes('Item')) subtypeText = 'Item';
+            
+            if (subtypeText) {
+                // Draw gradient background (matching new CSS) with enhanced opacity for deluxe mode
+                const subtypeGradient = ctx.createLinearGradient(3, currentY, 3, currentY + 24);
+                if (isDeluxeMode) {
+                    subtypeGradient.addColorStop(0, 'rgba(30, 28, 18, 0.3)'); // Much more transparent for deluxe
+                    subtypeGradient.addColorStop(1, 'rgba(44, 38, 20, 0.3)');
+                } else {
+                    subtypeGradient.addColorStop(0, '#1E1C12'); // --parchment-dark
+                    subtypeGradient.addColorStop(1, '#2C2614'); // --parchment
+                }
+                ctx.fillStyle = subtypeGradient;
+                ctx.fillRect(3, currentY, 274, 24);
+                
+                // Draw top border (thicker and gold for deluxe mode)
+                ctx.strokeStyle = isDeluxeMode ? '#daac17' : '#97740a'; // Gold for deluxe
+                ctx.lineWidth = isDeluxeMode ? 3 : 1;
+                ctx.strokeRect(3, currentY, 274, 1);
+                
+                // Draw bottom border (thicker and gold for deluxe mode)
+                ctx.lineWidth = isDeluxeMode ? 4 : 2;
+                ctx.strokeRect(3, currentY + 24, 274, 2);
+                
+                // Add inner borders for deluxe mode
+                if (isDeluxeMode) {
+                    ctx.strokeStyle = '#97740a'; // Dark gold inner border
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(4, currentY + 1, 272, 22);
+                }
+                
+                // Draw subtype text with enhanced styling for deluxe mode
+                ctx.fillStyle = '#ebc20e'; // --ink
+                ctx.font = 'bold italic 12px serif'; // Larger and bold
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                if (isDeluxeMode) {
+                    // Add stronger shadow and glow for deluxe mode
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    ctx.shadowBlur = 4;
+                    
+                    // Add glow effect
+                    ctx.strokeStyle = 'rgba(218, 172, 23, 0.8)'; // Gold glow
+                    ctx.lineWidth = 2;
+                    ctx.strokeText(subtypeText, 140, currentY + 12);
+                } else {
+                    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                    ctx.shadowOffsetX = 1;
+                    ctx.shadowOffsetY = 1;
+                    ctx.shadowBlur = 2;
+                }
+                
+                ctx.fillText(subtypeText, 140, currentY + 12);
+                ctx.shadowColor = 'transparent'; // Reset shadow
+                
+                currentY += 26;
+            }
+            
+            // Draw ability section if available (matching .ability-section)
+            if (card.ability && card.ability.name) {
+                const abilityAreaHeight = card.flavor_text ? 80 : (420 - currentY - 5); // Reduce height if flavor text exists
+                
+                // Ability background with enhanced opacity for deluxe mode
+                ctx.fillStyle = isDeluxeMode ? 'rgba(30, 28, 18, 0.25)' : '#1E1C12'; // Much more transparent for deluxe
+                ctx.fillRect(8, currentY, 264, abilityAreaHeight);
+                
+                // Ability border with enhanced styling for deluxe mode
+                ctx.strokeStyle = isDeluxeMode ? '#daac17' : '#97740a'; // Gold border for deluxe
+                ctx.lineWidth = isDeluxeMode ? 3 : 1; // Much thicker border for deluxe
+                ctx.strokeRect(8, currentY, 264, abilityAreaHeight);
+                
+                // Add inner border for deluxe mode
+                if (isDeluxeMode) {
+                    ctx.strokeStyle = '#97740a'; // Dark gold inner border
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(9, currentY + 1, 262, abilityAreaHeight - 2);
+                }
+                
+                // Ability name with enhanced styling for deluxe mode
+                ctx.fillStyle = '#daac17'; // --gold
+                ctx.font = 'bold 12px serif';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                
+                if (isDeluxeMode) {
+                    // Add text shadow for deluxe mode
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                    ctx.shadowOffsetX = 1;
+                    ctx.shadowOffsetY = 1;
+                    ctx.shadowBlur = 3;
+                }
+                
+                ctx.fillText(card.ability.name, 15, currentY + 8);
+                
+                // Ability description with word wrapping and enhanced styling for deluxe mode
+                if (card.ability.description) {
+                    ctx.fillStyle = '#ebc20e'; // --ink
+                    ctx.font = '10px serif';
+                    
+                    const words = card.ability.description.split(' ');
+                    let line = '';
+                    let lineY = currentY + 25;
+                    const maxWidth = 250;
+                    const lineHeight = 12;
+                    
+                    for (let n = 0; n < words.length; n++) {
+                        const testLine = line + words[n] + ' ';
+                        const metrics = ctx.measureText(testLine);
+                        
+                        if (metrics.width > maxWidth && n > 0) {
+                            ctx.fillText(line.trim(), 15, lineY);
+                            line = words[n] + ' ';
+                            lineY += lineHeight;
+                            
+                            // Stop if we're running out of space
+                            if (lineY > currentY + abilityAreaHeight - lineHeight) break;
+                        } else {
+                            line = testLine;
+                        }
+                    }
+                    
+                    // Draw the last line
+                    if (line.trim() && lineY <= currentY + abilityAreaHeight - lineHeight) {
+                        ctx.fillText(line.trim(), 15, lineY);
+                    }
+                }
+                
+                // Reset shadow
+                ctx.shadowColor = 'transparent';
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+                ctx.shadowBlur = 0;
+                
+                currentY += abilityAreaHeight + 3; // Move current Y position down
+            }
+            
+            // Draw flavor text section if available (must appear at bottom of card)
+            if (card.flavor_text) {
+                const flavorAreaHeight = 420 - currentY - 5;
+                
+                // Flavor text background with enhanced opacity for deluxe mode
+                ctx.fillStyle = isDeluxeMode ? 'rgba(30, 28, 18, 0.25)' : '#1E1C12'; // Much more transparent for deluxe
+                ctx.fillRect(8, currentY, 264, flavorAreaHeight);
+                
+                // Flavor text border with enhanced styling for deluxe mode
+                ctx.strokeStyle = isDeluxeMode ? '#daac17' : '#97740a'; // Gold border for deluxe
+                ctx.lineWidth = isDeluxeMode ? 3 : 1; // Much thicker border for deluxe
+                ctx.strokeRect(8, currentY, 264, flavorAreaHeight);
+                
+                // Add inner border for deluxe mode
+                if (isDeluxeMode) {
+                    ctx.strokeStyle = '#97740a'; // Dark gold inner border
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(9, currentY + 1, 262, flavorAreaHeight - 2);
+                }
+                
+                // Flavor text with quotation marks and centering, enhanced for deluxe mode
+                ctx.fillStyle = '#8f770d'; // --ink2 (slightly muted)
+                ctx.font = 'italic 9px serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                
+                if (isDeluxeMode) {
+                    // Add text shadow for deluxe mode
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                    ctx.shadowOffsetX = 1;
+                    ctx.shadowOffsetY = 1;
+                    ctx.shadowBlur = 2;
+                }
+                
+                // Word wrap the flavor text
+                const flavorText = `"${card.flavor_text}"`;
+                const words = flavorText.split(' ');
+                let line = '';
+                let lineY = currentY + 12;
+                const maxWidth = 240;
+                const lineHeight = 11;
+                
+                for (let n = 0; n < words.length; n++) {
+                    const testLine = line + words[n] + ' ';
+                    const metrics = ctx.measureText(testLine);
+                    
+                    if (metrics.width > maxWidth && n > 0) {
+                        ctx.fillText(line.trim(), 140, lineY); // Center text at x=140
+                        line = words[n] + ' ';
+                        lineY += lineHeight;
+                        
+                        // Stop if we're running out of space
+                        if (lineY > currentY + flavorAreaHeight - lineHeight) break;
+                    } else {
+                        line = testLine;
+                    }
+                }
+                
+                // Draw the last line
+                if (line.trim() && lineY <= currentY + flavorAreaHeight - lineHeight) {
+                    ctx.fillText(line.trim(), 140, lineY);
+                }
+                
+                // Reset shadow
+                ctx.shadowColor = 'transparent';
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+                ctx.shadowBlur = 0;
+            }
+            
+            return canvas;
+        }
+        
+        function filterCards() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const typeValue = typeFilter.value;
+            const tierValue = tierFilter.value;
+            const energyValue = energyFilter.value;
+            
+            filteredCards = cards.filter(card => {
+                const matchesSearch = !searchTerm || 
+                    card.name.toLowerCase().includes(searchTerm) ||
+                    (card.type && card.type.toLowerCase().includes(searchTerm)) ||
+                    (card.race && card.race.toLowerCase().includes(searchTerm)) ||
+                    (card.tier && card.tier.toLowerCase().includes(searchTerm)) ||
+                    (card.ability && card.ability.name && card.ability.name.toLowerCase().includes(searchTerm)) ||
+                    (card.ability && card.ability.description && card.ability.description.toLowerCase().includes(searchTerm));
+                
+                const matchesType = !typeValue || card.type === typeValue;
+                const matchesTier = !tierValue || card.tier === tierValue;
+                const matchesEnergy = !energyValue || (card.cost && card.cost.toLowerCase().includes(energyValue.toLowerCase()));
+                
+                return matchesSearch && matchesType && matchesTier && matchesEnergy;
+            });
+            
+            renderCards();
+        }
+        
+        // Card operations
+        // Modal art cycling
+        let modalArtIndex = 0;
+        let modalArtVariants = [];
+
+        function cycleModalArt(direction = 1) {
+            if (modalArtVariants.length <= 1) return;
+            
+            modalArtIndex = (modalArtIndex + direction + modalArtVariants.length) % modalArtVariants.length;
+            
+            const modalImage = document.querySelector('.modal-image');
+            const artIndicator = document.querySelector('.modal-art-indicator');
+            
+            if (modalImage) {
+                modalImage.src = modalArtVariants[modalArtIndex];
+            }
+            if (artIndicator) {
+                artIndicator.textContent = `${modalArtIndex + 1}/${modalArtVariants.length}`;
+            }
+            
+            // Sync with the grid card if available
+            if (currentModalCard && currentModalCardIndex !== undefined) {
+                const uniqueId = `${currentModalCard.id}_${currentModalCardIndex}`;
+                currentArtIndex[uniqueId] = modalArtIndex;
+                
+                // Update the grid card image and indicator
+                const cardElement = document.querySelector(`[data-card-id="${currentModalCard.id}"][data-card-index="${currentModalCardIndex}"]`);
+                if (cardElement) {
+                    const imgElement = cardElement.querySelector('.card-image');
+                    const indicator = cardElement.querySelector('.art-indicator');
+                    
+                    if (imgElement) {
+                        imgElement.src = modalArtVariants[modalArtIndex];
+                    }
+                    if (indicator) {
+                        indicator.textContent = `${modalArtIndex + 1}/${modalArtVariants.length}`;
+                    }
+                }
+            }
+        }
+
+        function showCardDetails(card, cardIndex = 0) {
+            if (!card) return;
+            
+            // Store the current card and its index for printing
+            currentModalCard = card;
+            currentModalCardIndex = cardIndex;
+            
+            // Get art variants for modal - use the current art variant from the grid
+            const variants = getArtVariants(card);
+            modalArtVariants = variants;
+            
+            // Use the current art index from the grid if available
+            const uniqueId = `${card.id}_${cardIndex}`;
+            const currentGridIndex = currentArtIndex[uniqueId] || 0;
+            modalArtIndex = currentGridIndex;
+            
+            const imageUrl = variants[modalArtIndex] || card.image_url || card.image_placeholder;
+            
+            document.getElementById('modalCardTitle').textContent = card.name;
+            document.getElementById('modalCardContent').innerHTML = `
+                <div class="modal-image-container" style="position: relative; text-align: center; margin-bottom: 20px;">
+                    ${variants.length > 1 ? `
+                        <div class="modal-art-controls" style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.8); padding: 5px 10px; border-radius: 5px; z-index: 10;">
+                            <button class="art-cycle-btn prev" onclick="cycleModalArt(-1)" title="Previous Art">‹</button>
+                            <span class="modal-art-indicator" style="color: var(--ink); font-size: 0.8rem; font-weight: bold; min-width: 40px;">1/${variants.length}</span>
+                            <button class="art-cycle-btn next" onclick="cycleModalArt(1)" title="Next Art">›</button>
+                        </div>
+                    ` : ''}
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${card.name}" class="modal-image" onerror="this.style.display='none';" style="max-width: 100%; max-height: 400px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">` : ''}
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <strong style="color: var(--gold);">Type:</strong><br>
+                        <span style="color: var(--ink);">${card.type || 'Unknown'}</span>
+                    </div>
+                    <div>
+                        <strong style="color: var(--gold);">Cost:</strong><br>
+                        <span class="${getEnergyClass(card.cost)}" style="padding: 4px 8px; border-radius: 4px; font-weight: bold;">${card.cost || 'Free'}</span>
+                    </div>
+                    ${card.race ? `
+                        <div>
+                            <strong style="color: var(--gold);">Race:</strong><br>
+                            <span style="color: var(--ink);">${card.race}</span>
+                        </div>
+                    ` : ''}
+                    ${card.tier ? `
+                       
+                        <div>
+                            <strong style="color: var(--gold);">Tier:</strong><br>
+                            <span style="color: var(--ink);">${card.tier}</span>
+                        </div>
+                    ` : ''}
+                    ${card.hp !== undefined && card.hp !== null ? `
+                        <div>
+                            <strong style="color: var(--gold);">HP:</strong><br>
+                            <span class="stat-badge hp-badge">${card.hp}</span>
+                        </div>
+                    ` : ''}
+                    ${card.atk !== undefined && card.atk !== null ? `
+                        <div>
+                            <strong style="color: var(--gold);">ATK:</strong><br>
+                            <span class="stat-badge atk-badge">${card.atk}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                ${card.ability && card.ability.name ? `
+                    <div class="ability-section">
+                        <div class="ability-name" style="font-size: 1.2rem; margin-bottom: 10px;">${card.ability.name}</div>
+                        <div class="ability-description" style="font-size: 1rem; line-height: 1.6;">${card.ability.description || ''}</div>
+                    </div>
+                ` : ''}
+                
+                ${card.flavor_text ? `
+                    <div class="flavor-text-section" style="background-color: var(--parchment-dark); border: 1px solid var(--gold-dark); border-radius: 6px; padding: 15px; margin-top: 12px; text-align: center;">
+                        <div class="flavor-text" style="font-style: italic; color: var(--ink2); font-size: 1rem; line-height: 1.4;">"${card.flavor_text}"</div>
+                    </div>
+                ` : ''}
+            `;
+            
+            cardModal.classList.add('active');
+        }
+        
+        // Storage functions
+        function saveToStorage() {
+            localStorage.setItem('diaperSchoolTCG', JSON.stringify(cards));
+        }
+        
+        function loadFromStorage() {
+            const stored = localStorage.getItem('diaperSchoolTCG');
+            if (stored) {
+                try {
+                    const loadedCards = JSON.parse(stored);
+                    // Merge with initial data, keeping user additions
+                    const initialIds = initialCardData.map(c => c.id);
+                    const userCards = loadedCards.filter(c => !initialIds.includes(c.id));
+                    cards = [...initialCardData, ...userCards];
+                    filteredCards = [...cards];
+                } catch (e) {
+                    console.error('Failed to load saved cards:', e);
+                }
+            }
+        }
+        
+        function exportData() {
+            const dataStr = JSON.stringify(cards, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'diaper-school-tcg-cards.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const importedCards = JSON.parse(e.target.result);
+                            if (Array.isArray(importedCards) && confirm(`Import ${importedCards.length} cards? This will replace your current collection.`)) {
+                                cards = importedCards;
+                                filteredCards = [...cards];
+                                filterCards();
+                                updateStats();
+                                saveToStorage();
+                                alert('Cards imported successfully!');
+                            }
+                        } catch (error) {
+                            alert('Error reading file: ' + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+        
+        // Event listeners
+        searchInput.addEventListener('input', filterCards);
+        typeFilter.addEventListener('change', filterCards);
+        tierFilter.addEventListener('change', filterCards);
+        energyFilter.addEventListener('change', filterCards);
+        
+        document.getElementById('exportBtn').addEventListener('click', exportData);
+        document.getElementById('importBtn').addEventListener('click', importData);
+        
+        // Deck Builder Event Listeners
+        toggleDeckBtn.addEventListener('click', toggleDeckView);
+        clearDeckBtn.addEventListener('click', clearDeck);
+        saveDeckBtn.addEventListener('click', saveDeck);
+        loadDeckBtn.addEventListener('click', loadDeck);
+        exportPngBtn.addEventListener('click', exportDeckAsPNG);
+        
+        printCardBtn.addEventListener('click', printSingleCard);
+        
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            cardModal.classList.remove('active');
+            currentModalCard = null; // Clear the current card when modal closes
+        });
+        
+        // Close modals when clicking outside
+        cardModal.addEventListener('click', (e) => {
+            if (e.target === cardModal) {
+                cardModal.classList.remove('active');
+                currentModalCard = null; // Clear the current card when modal closes
+            }
+        });
+        
+        // Initialize
+        function init() {
+            // Initialize cards from external data
+            if (typeof initialCardData !== 'undefined') {
+                cards = [...initialCardData];
+                filteredCards = [...cards];
+                
+                // Preload art variants for all cards (async, but don't wait)
+                preloadAllArtVariants();
+                
+                loadFromStorage();
+                filterCards();
+                updateStats();
+                updateDeckStats();
+                updateAddButtons();
+                setTimeout(() => {
+                    loadingSpinner.style.display = 'none';
+                }, 1000);
+            } else {
+                // Retry if cards haven't loaded yet
+                setTimeout(init, 100);
+            }
+        }
+        
+        // Preload art variants for all cards
+        async function preloadAllArtVariants() {
+            console.log('Preloading art variants for all cards...');
+            const promises = cards.map(card => preloadArtVariants(card));
+            await Promise.all(promises);
+            console.log('Art variants preloaded for', artVariantsCache.size, 'cards');
+            
+            // Re-render cards to show art cycle buttons where appropriate
+            renderCards();
+        }
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('PWA install prompt available');
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button (you can add this to your UI)
+            showInstallButton();
+        });
+
+        function showInstallButton() {
+            // Create install button if it doesn't exist
+            let installBtn = document.getElementById('installBtn');
+            if (!installBtn) {
+                installBtn = document.createElement('button');
+                installBtn.id = 'installBtn';
+                installBtn.className = 'btn';
+                installBtn.innerHTML = '📱 Install App';
+                installBtn.style.position = 'fixed';
+                installBtn.style.top = '20px';
+                installBtn.style.right = '20px';
+                installBtn.style.zIndex = '1000';
+                installBtn.style.backgroundColor = 'var(--gold)';
+                installBtn.style.color = 'var(--parchment)';
+                
+                installBtn.addEventListener('click', installPWA);
+                document.body.appendChild(installBtn);
+            }
+            installBtn.style.display = 'block';
+        }
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                    document.getElementById('installBtn').style.display = 'none';
+                });
+            }
+        }
+
+        // Hide install button when app is already installed
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('App was installed.');
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.style.display = 'none';
+            }
+        });
+        
+        // init() is called by the script.onload event
+    </script>
+</body>
+</html>

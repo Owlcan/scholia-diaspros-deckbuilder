@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+</head>
+<body>
+    <canvas id="canvas" width="512" height="512"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Background
+        ctx.fillStyle = '#2c2619';
+        ctx.fillRect(0, 0, 512, 512);
+        
+        // Border
+        ctx.strokeStyle = '#daac17';
+        ctx.lineWidth = 16;
+        ctx.strokeRect(8, 8, 496, 496);
+        
+        // Inner design - card symbol
+        ctx.fillStyle = '#daac17';
+        ctx.fillRect(128, 128, 256, 320);
+        
+        // Inner border
+        ctx.fillStyle = '#2c2619';
+        ctx.fillRect(144, 144, 224, 288);
+        
+        // Text
+        ctx.fillStyle = '#daac17';
+        ctx.font = 'bold 48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('TCG', 256, 220);
+        
+        ctx.font = 'bold 36px Arial';
+        ctx.fillText('DECK', 256, 280);
+        ctx.fillText('BUILDER', 256, 330);
+    </script>
+</body>
+</html>
