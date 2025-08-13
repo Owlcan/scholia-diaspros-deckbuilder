@@ -1941,10 +1941,10 @@ const initialCardData = [
                 type: "Spell Card",
                 race: "Magic",
                 tier: "Utility",
-                cost: "1 Universal",
+                cost: "2 Universal",
                 ability: {
                     name: "Instant Effect",
-                    description: "Target opponent loses their next turn. They must also discard one card from their hand."
+                    description: "Tap target creature, it does not untap on your opponent's next turn. They must also discard one card from their hand."
                 },
                 image_url: "src/assets/images/expeditionandgames/TCG Images/spontaneous accident.webp"
             },

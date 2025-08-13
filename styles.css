@@ -141,8 +141,8 @@ h1::after {
 /* Token System */
 .board-token {
     position: absolute;
-    width: 40px;
-    height: 25px;
+    width: 44px; /* ~10% larger */
+    height: 28px; /* ~10% larger */
     border-radius: 50%;
     border: 2px solid #333;
     display: flex;
@@ -178,12 +178,14 @@ h1::after {
     z-index: 1000; 
 }
 .token-palette button { 
-    width: 35px; 
-    height: 25px; 
+    width: 38px; 
+    height: 28px; 
     border-radius: 50%; 
     border: 2px solid #333; 
     cursor: pointer; 
     transition: transform 0.2s ease; 
+    background-size: cover;
+    background-position: center;
 }
 .token-palette button:hover { transform: scale(1.1); }
 .token-palette .red { background: radial-gradient(ellipse at center, #ff6b6b, #dc2626); }
@@ -191,6 +193,41 @@ h1::after {
 .token-palette .green { background: radial-gradient(ellipse at center, #10b981, #059669); }
 .token-palette .white { background: radial-gradient(ellipse at center, #f9fafb, #e5e7eb); }
 .token-palette .black { background: radial-gradient(ellipse at center, #374151, #111827); }
+
+/* Image-based token variant */
+.board-token.token-image {
+    width: auto; /* size from inner image */
+    height: auto;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+}
+
+.board-token.token-image .token-number {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    background: #222;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #fff;
+}
+
+.board-token.token-image .token-img {
+    height: 65px; /* ~10% larger than old tokens (25px) */
+    width: auto; /* keep aspect ratio */
+    display: block;
+    pointer-events: none; /* dragging handled by parent */
+}
 
 /* UI Minimize System */
 .ui-minimized .container {
@@ -801,21 +838,27 @@ body.ui-hidden #gameBoardZone { height:100vh; padding-top:20px; }
 }
 
 .coin {
-    width: 80px;
-    height: 80px;
+    width: 92px;
+    height: 92px;
     background: linear-gradient(45deg, #ffd700, #ffed4e);
     border: 3px solid #b8860b;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
-    color: #8b4513;
     margin: 0 auto 10px;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.coin img#coinImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
 }
 
 .coin:hover {
@@ -838,4 +881,11 @@ body.ui-hidden #gameBoardZone { height:100vh; padding-top:20px; }
     text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
     margin-top: 5px;
     min-height: 20px;
+}
+
+/* Specific size override for vertical plus tokens (50% larger) */
+.board-token.token-image .token-img[src$="plusone.png"],
+.board-token.token-image .token-img[src$="plustwo.png"],
+.board-token.token-image .token-img[src$="plusthree.png"] {
+    height: 100px; /* default 32px * 1.5 */
 }

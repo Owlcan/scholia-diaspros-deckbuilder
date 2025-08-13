@@ -45,3 +45,34 @@ Send them either:
 - The portable exe (just runs, no installation)
 
 **Perfect for non-technical users!**
+
+---
+
+## Shipping small updates without a full re-download
+
+If you changed only a few files (HTML/CSS/JS/assets), you can ship a tiny "patch zip" and avoid rebuilding/installing:
+
+1) Create a folder with just the changed files, preserving paths (e.g., `index.html`, `styles.css`, `main.js`, `sw.js`, `src/assets/...`).
+2) Copy one of the scripts from `scripts/update/` into that folder:
+	- `Update.ps1` (PowerShell; supports optional backup)
+	- `Update.bat` (Batch; minimal copy)
+3) Zip that folder and share with users.
+
+User instructions (PowerShell):
+```
+Right-click the patch zip > Extract All...
+Open PowerShell in the extracted folder
+Run: .\Update.ps1 -InstallPath "C:\\Program Files\\Scholia Diaspros Deckbuilder"  # or wherever it's installed
+```
+
+User instructions (Batch/CMD):
+```
+Right-click the patch zip > Extract All...
+Open Command Prompt in the extracted folder
+Run: Update.bat "C:\\Program Files\\Scholia Diaspros Deckbuilder"
+```
+
+Notes:
+- Ask users to close the app first.
+- Edit the file list inside the script (`$ChangedFiles` or `FILES`) per patch.
+- This does not modify your build pipeline and avoids new installer/warning prompts.

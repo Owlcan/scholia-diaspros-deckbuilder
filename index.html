@@ -208,7 +208,9 @@
                 
                 <!-- Coin Flipper -->
                 <div class="coin-container">
-                    <div class="coin" id="coin" onclick="flipCoin()">🪙</div>
+                    <div class="coin" id="coin" onclick="flipCoin()">
+                        <img id="coinImg" src="src/assets/images/heads.webp" alt="Coin">
+                    </div>
                     <div class="coin-result" id="coinResult">Click to flip!</div>
                 </div>
                 
@@ -998,12 +1000,26 @@
                 const btn = document.getElementById(`addBtn_${uniqueCardId}`);
                 if (btn) {
                     const inDeck = playerDeck.filter(c => c.id === card.id).length;
-                    if (inDeck >= 3) {  // Max 3 copies per card
-                        btn.disabled = true;
-                        btn.textContent = '✓ Max Copies';
-                    } else if (playerDeck.length >= 55) {
+                    const isBooster = (card.type && card.type.toLowerCase().includes('booster')) || (card.id && card.id.startsWith('booster_'));
+
+                    // Always respect total deck size
+                    if (playerDeck.length >= 55) {
                         btn.disabled = true;
                         btn.textContent = '⚠️ Deck Full';
+                        return;
+                    }
+
+                    // Exempt boosters from per-card copy limits
+                    if (isBooster) {
+                        btn.disabled = false; // allow unlimited boosters until deck is full
+                        btn.textContent = `➕ ${inDeck > 0 ? `(${inDeck})` : ''}`;
+                        return;
+                    }
+
+                    // Non-booster: keep existing per-card limit (3)
+                    if (inDeck >= 3) {
+                        btn.disabled = true;
+                        btn.textContent = '✓ Max Copies';
                     } else {
                         btn.disabled = false;
                         btn.textContent = `➕ ${inDeck > 0 ? `(${inDeck})` : ''}`;
@@ -2395,22 +2411,27 @@
             toast('Life reset to 10');
         }
 
-        // Coin flip functionality
+        // Coin flip functionality (uses heads/tails images)
+        const COIN_HEADS_SRC = 'src/assets/images/heads.webp';
+        const COIN_TAILS_SRC = 'src/assets/images/tails.webp';
+        // Preload coin images once
+        (() => { const i1 = new Image(); i1.src = COIN_HEADS_SRC; const i2 = new Image(); i2.src = COIN_TAILS_SRC; })();
+
         function flipCoin() {
             const coin = document.getElementById('coin');
+            const coinImg = document.getElementById('coinImg');
             const result = document.getElementById('coinResult');
-            
+
             // Add flipping animation
             coin.classList.add('flipping');
             result.textContent = 'Flipping...';
-            
+
             // Random result after animation
             setTimeout(() => {
                 const isHeads = Math.random() < 0.5;
-                coin.textContent = isHeads ? '🟡' : '🔴';
+                coinImg.src = isHeads ? COIN_HEADS_SRC : COIN_TAILS_SRC;
                 result.textContent = isHeads ? 'HEADS' : 'TAILS';
                 coin.classList.remove('flipping');
-                
                 toast(`Coin flip: ${isHeads ? 'HEADS' : 'TAILS'}`);
             }, 1000);
         }
@@ -2540,10 +2561,55 @@
                 ['red','blue','green','white','black'].forEach(c => {
                     const b=document.createElement('button'); b.className=c; b.title=c+ ' token'; b.addEventListener('click',()=>spawnToken(c)); tokenPalette.appendChild(b);
                 });
+                // Append image token buttons
+                const imgTokens = [
+                    { title: 'HP +1', src: 'src/assets/images/hpone.png' },
+                    { title: 'HP +2', src: 'src/assets/images/hptwo.png' },
+                    { title: 'HP +3', src: 'src/assets/images/hpthree.png' },
+                    { title: '+1', src: 'src/assets/images/plusone.png' },
+                    { title: '+2', src: 'src/assets/images/plustwo.png' },
+                    { title: '+3', src: 'src/assets/images/plusthree.png' },
+                    { title: 'Spider', src: 'src/assets/images/spidertoken.png' }
+                ];
+                imgTokens.forEach(ti => {
+                    const b = document.createElement('button');
+                    b.className = 'img-icon';
+                    b.title = ti.title;
+                    b.setAttribute('data-token-img', ti.src);
+                    b.style.backgroundImage = `url('${ti.src}')`;
+                    tokenPalette.appendChild(b);
+                    b.addEventListener('click', ()=> spawnImageToken(ti.src));
+                });
             } else {
                 tokenPalette.querySelectorAll('button').forEach(b => {
-                    b.addEventListener('click', ()=>spawnToken([...b.classList].find(cls=>['red','blue','green','white','black'].includes(cls))));
+                    const imgSrc = b.getAttribute('data-token-img');
+                    if (imgSrc) {
+                        b.addEventListener('click', ()=> spawnImageToken(imgSrc));
+                    } else {
+                        b.addEventListener('click', ()=>spawnToken([...b.classList].find(cls=>['red','blue','green','white','black'].includes(cls))));
+                    }
                 });
+                // Ensure our image token buttons exist even if palette came from HTML
+                const ensureBtn = (title, src) => {
+                    if (!tokenPalette.querySelector(`button[data-token-img="${src}"]`)){
+                        const b = document.createElement('button');
+                        b.className = 'img-icon';
+                        b.title = title;
+                        b.setAttribute('data-token-img', src);
+                        b.style.backgroundImage = `url('${src}')`;
+                        tokenPalette.appendChild(b);
+                        b.addEventListener('click', ()=> spawnImageToken(src));
+                    }
+                };
+                [
+                    ['HP +1','src/assets/images/hpone.png'],
+                    ['HP +2','src/assets/images/hptwo.png'],
+                    ['HP +3','src/assets/images/hpthree.png'],
+                    ['+1','src/assets/images/plusone.png'],
+                    ['+2','src/assets/images/plustwo.png'],
+                    ['+3','src/assets/images/plusthree.png'],
+                    ['Spider','src/assets/images/spidertoken.png']
+                ].forEach(([t,s])=> ensureBtn(t,s));
             }
         }
 
@@ -2559,6 +2625,30 @@
             t.dataset.y = t.style.top.replace('px', '');
             t.style.left = '0px';
             t.style.top = '0px';
+            applyPosition(t);
+            makeTokenDraggable(t);
+            gameBoardZone.appendChild(t);
+        }
+
+        function spawnImageToken(src) {
+            const t = document.createElement('div');
+            t.className = 'board-token token-image';
+            t.textContent = '';
+            t.dataset.tokenImg = src;
+            t.style.position = 'absolute';
+            t.style.left = (40 + Math.random() * (gameBoardZone.clientWidth - 120)) + 'px';
+            t.style.top = (40 + Math.random() * (gameBoardZone.clientHeight - 160)) + 'px';
+            t.style.zIndex = (++topZIndexCounter).toString();
+            t.dataset.x = t.style.left.replace('px', '');
+            t.dataset.y = t.style.top.replace('px', '');
+            t.style.left = '0px';
+            t.style.top = '0px';
+            // Add inner <img> to preserve aspect ratio, fixed height
+            const img = document.createElement('img');
+            img.src = src;
+            img.className = 'token-img';
+            img.alt = 'token';
+            t.appendChild(img);
             applyPosition(t);
             makeTokenDraggable(t);
             gameBoardZone.appendChild(t);
@@ -2613,9 +2703,17 @@
             });
             
             t.addEventListener('dblclick', ()=>{ 
-                const n = parseInt(t.textContent||'0',10); 
-                const next = (n+1)>9?1:n+1; 
-                t.textContent = next.toString(); 
+                if (t.classList.contains('token-image')) {
+                    let badge = t.querySelector('.token-number');
+                    let n = parseInt(badge?.textContent || '0', 10) || 0;
+                    const next = (n + 1) > 9 ? 1 : (n + 1);
+                    if (!badge) { badge = document.createElement('span'); badge.className = 'token-number'; t.appendChild(badge); }
+                    badge.textContent = next.toString();
+                } else {
+                    const n = parseInt(t.textContent||'0',10); 
+                    const next = (n+1)>9?1:n+1; 
+                    t.textContent = next.toString(); 
+                }
             });
         }
 

@@ -124,3 +124,9 @@ local-storage-backup/
 
 # Don't ignore the TCG Images folder - we want those in git
 !src/assets/images/
+BUILD-INSTRUCTIONS.md
+scripts/update/Update.bat
+scripts/update/Update.ps1
+BUILD-INSTRUCTIONS.md
+BUILD-INSTRUCTIONS.md
+BUILD-INSTRUCTIONS.md
