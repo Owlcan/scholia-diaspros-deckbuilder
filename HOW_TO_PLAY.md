@@ -6,8 +6,68 @@ _Living rules: this document is authoritative for current play; card text overri
 
 </div>
 
-**Last Updated:** 2025-08-11  
-**Version Tag:** v1.0 (First cleaned public rules pass)
+**Last Updated:** 2025-08-22  
+**Version Tag:** v1.0.1 (Expanded clarifications – no system changes made.)
+
+---
+
+---
+
+## Quick Start (10 Steps)
+1. Shuffle a legal deck (≥40 cards; respect copy limits; unlimited Boosters). Set your SV (life) to 10.
+2. Decide first player (coin flip). Draw 7 cards.
+3. (Optional) Take one mulligan to 6 (Section 13) if your opener lacks resources/plays.
+4. On your turn: Untap → play up to 5 HP worth of Boosters → deploy units / cast spells → (optionally) attack → second main → end.
+5. You may not tap a newly entered Monster (or Student that is also a Monster) the turn it enters (it can still block and have static/triggered effects).
+6. Track resources by tapping Boosters / paying costs; illegal plays are rewound (Section 28).
+7. Combat: Declare attackers, opponents declare blockers (Boosters can block), assign & resolve damage simultaneously (Section 10).
+8. Destroyed cards go to The Pail. Tokens cease if they ever change zone (unless stated otherwise).
+9. Deck‑out (attempt to draw with 0 cards) = immediate loss.
+10. First to reduce each opponent to 0 SV wins (last standing in multiplayer).
+
+---
+
+## Table of Contents
+1. Objective & Victory
+2. Core Components
+3. Card Types
+4. Deck Construction
+5. Setup Sequence
+6. Turn Structure (Phases)  
+	6.1 Detailed Phase Windows  
+	6.2 Example Full Turn Transcript
+7. Priority & Instants
+8. Playing Cards & Costs
+9. Booster Rules (Energy Economy)  
+	9.1 Booster Play Examples
+10. Combat  
+	10.1 Combat Examples  
+	10.2 Common Combat Edge Cases
+11. Tapping / Flipping / Rotation / Stacking
+12. Zones
+13. Mulligan Procedure
+14. Hand Size
+15. Tokens & Counters (Expanded)
+16. Life (SV)
+17. Art Variants
+18. Digital Board & Deck Tools
+19. Keyboard / Interaction Quick Reference
+20. Keywords (Implemented / Planned)
+21. Multiplayer
+22. Combat Quick Reference
+23. Glossary
+24. Design & Balance Notes
+25. Open Design & Future Clarifications
+26. Change Log
+27. Starter Deck Appendix
+28. Rewinds, Illegal Actions & Shortcuts (NEW)
+29. Card Anatomy & Layout (NEW)
+30. Cost & Energy Symbol Conventions (Preview) (NEW)
+31. Timing Windows Summary (NEW) 
+32. Common Questions (FAQ) (NEW)
+33. Advanced / Optional House Rules (NEW)
+34. Accessibility & UI Tips (NEW)
+35. Versioning & Reporting Ambiguities (NEW)
 
 ---
 
@@ -99,6 +159,24 @@ Unless card text states otherwise, each turn proceeds:
 You may summon Students / Monsters on turn 1.  
 First‑Turn Tap Restriction: A Monster (or Student that is also a Monster) can’t tap for costs or abilities the turn it enters play. It may still block and its static/triggered abilities function.
 
+### 6.1 Detailed Phase Windows
+Each numbered window below is a possible priority pass point:
+1. Start Phase begins → (A) resolve “At start” triggers (active player chooses order among their simultaneous triggers) → priority.
+2. After each spell/ability you play in Main Phase resolves → priority.
+3. Entering Combat Phase: pre‑combat priority (last chance to cast Instants before attackers are declared).
+4. Declare Attackers → (B) any "After attackers declared" triggers → priority (defender may respond before blockers chosen).
+5. Declare Blockers → (C) any "After blockers" triggers → priority.
+6. Damage Assignment (no priority mid‑assignment) → Damage is locked in → Damage Resolves → (D) "After damage" triggers → priority.
+7. Post‑Combat Main (identical timing to Main).
+8. End Phase begins → "At end of turn" triggers → priority → when all pass consecutively the turn ends.
+
+Shortcut Principle: If both players verbally/implicitly pass through a series of empty priority windows, the game advances.
+
+### 6.2 Example Full Turn Transcript
+Player A (turn starts): Untaps, resolves an upkeep trigger (draw 1), passes priority. Player B passes.
+Main: A plays a 2 HP Booster (HP tally 2/5), plays a 3 HP Booster (5/5). Attempts a third (illegal – exceeds 5 HP); rewinds (Section 28). A summons a Monster; it has “Tap: Deal 1 damage” but cannot tap this turn (first‑turn tap restriction). A passes. B casts an Instant removing another earlier Student. Priority back to A who passes.
+Combat: A declares the new Monster as an attacker. Priority to B: B taps a Booster for an Instant buff on their blocker, then declares a blocker. Damage: Attacker 3 ATK vs blocker 2 HP → blocker destroyed; attacker survives with no persistent damage. Post‑combat Main: A casts a Spell. End: "At end of turn" trigger exiles a temporary token. Turn ends.
+
 ---
 
 ## 7. Priority & Instants (Timing Model)
@@ -127,6 +205,17 @@ The “stack” is conceptual in v1.0; resolution is last‑in first‑out (LIFO
 - Defensive Role: During combat you may assign a Booster as a blocker. It can absorb damage up to its HP; excess damage beyond its HP is lost (no spillover) unless a future keyword changes this.
 - Boosters retain damage only until combat ends; damage is cleared if the Booster leaves play.
 
+### 9.1 Booster Play Examples
+| Example | Boosters Played | Total HP Consumed | Legal? | Notes |
+|---------|-----------------|-------------------|--------|-------|
+| A plays HP2 + HP2 + HP1 | 3 | 5 | ✔ | Exactly at limit. |
+| A plays HP3 + HP3 | 2 | 6 | ✖ | Exceeds; must rewind last. |
+| A plays HP4 then HP1 then attempts HP1 | 3 (attempt) | 6 (attempt) | ✖ | Third Booster illegal; rewind that play only. |
+| A plays HP5 single Booster | 1 | 5 | ✔ | Consumes entire allowance. |
+| A plays HP2 + HP1, later casts effect “Play an additional 2 HP of Boosters this turn” (future) then plays HP3 | 3 | 6 | Depends | Extra allowance effect needed to exceed 5. |
+
+Tracking Tip: In digital play you can verbally / chat log HP spent; physically, place a marker to track remaining allowance.
+
 ---
 
 ## 10. Combat
@@ -144,6 +233,31 @@ Key Combat Rules:
 - Damage tokens (if used) are for tracking within the current combat sequence only (unless a card grants lingering wounds).
 - Damage is cleared from all surviving units at the end of combat.
 - Leaving Play Reset: If a damaged card leaves the battlefield (hand / deck / exile / other), it returns with no memory of previous damage.
+
+### 10.1 Combat Examples
+**Single Block:** Attacker 3 ATK vs Blocker 2 HP → Blocker destroyed; no damage to SV.
+
+**Multiple Blockers (No Overflow):** Attacker 5 ATK blocked by Blocker A (2 HP) and Blocker B (3 HP). Attacker assigns 2 damage to A (destroyed) and 3 to B (destroyed). All damage simultaneous; attacker survives undamaged (no carry over beyond assigned amounts). If attacker had 4 ATK, assign 2 to A and 2 to B → A destroyed, B survives with 1 HP remaining.
+
+**Booster Block:** Booster (HP2, 0 ATK) blocks a 4 ATK Monster. Booster destroyed; no SV damage because blocked.
+
+**Unblocked:** 4 ATK Monster unblocked → opponent loses 4 SV.
+
+ASCII Diagram (A = Attacker; B1/B2 = Blockers)
+```
+	 A(5 ATK)
+		|\
+		| \
+	B1(2) B2(3)
+```
+Assignment: 2 → B1, 3 → B2.
+
+### 10.2 Common Combat Edge Cases
+1. First‑turn Monster can block? ✔ Yes (restriction only prevents tapping its own abilities that turn).
+2. Booster with temporary +ATK buff deals damage back equal to new ATK if effect grants ATK.
+3. Simultaneous death: If two attacking Monsters trade lethal with single blockers, they destroy each other simultaneously.
+4. Effect granting “Unblockable” after blockers declared: Too late – blockers remain; future evasion only affects new block declarations.
+5. Removing attacker before damage: That attacker deals no damage; its assigned damage is lost.
 
 Quick Flow: Attack → Block → Assign → Resolve → Cleanup.
 
@@ -185,6 +299,12 @@ No maximum hand size rule exists in v1.0. (Physical practicality only.)
 
 ## 15. Tokens & Counters
 Tokens track: temporary attack/HP buffs, status markers, or (within a combat) damage. You may use custom colored tokens provided by the UI. Remove all damage tokens at end of combat unless a card explicitly states damage persists.
+
+Expanded Usage:
+- Double‑click number overlay (digital) can represent cumulative counters (+1/+1 style) – agree notation before play.
+- Numeric overlay vs separate tokens: pick one method per game to avoid confusion.
+- Token Identity: Only what is explicitly defined on creation (name, stats, abilities). If ambiguous, default to a vanilla token with just indicated stat markers.
+- Stacked Tokens: Visual overlap does not merge; keep readable.
 
 ---
 
@@ -396,5 +516,98 @@ Customization Hooks:
 
 ### 27.6 Tracking Changes
 When you evolve a starter, snapshot the list (Export Deck) so you can A/B test revisions. Keep a short changelog: “-1 booster_012, +1 spell_0XX (removal)” to understand performance swings.
+
+---
+
+## 28. Rewinds, Illegal Actions & Shortcuts (NEW)
+**Illegal Play Detected Immediately:** Rewind to the last legal game state. Reveal of hidden info (like drawn card after an illegal Booster play) stands only if both players agree; otherwise reshuffle the revealed card into the unknown zone if reconstructable.
+
+**Common Rewinds:**
+- Exceeding 5 HP Booster play limit → Undo last Booster only.
+- Attempting to tap a summoning‑sick Monster → Untap it; reverse any cost payment; restore priority.
+- Paying cost partially then realizing insufficient Boosters → Reverse the play; untap used Boosters.
+
+**Out‑of‑Order Sequencing (OOS):** If a player takes a minor action retroactively that does not change choices made with imperfect information (e.g., “I forgot to untap this Booster at start”), allow correction if within the same turn and no new hidden info was gained.
+
+**Shortcuts:** Statements like “Go to combat?” imply offering priority at pre‑combat main end.
+
+## 29. Card Anatomy & Layout (NEW)
+While templating is evolving, a typical card data model includes:
+```
+Name | Type Line (e.g., Student – Cat) | Tier (Legendary / Boss) | Cost (energy symbols)
+ATK / HP (if a unit) | Ability Block(s) | Flavor (optional) | Set / ID | Art Credit
+```
+Rules Relevance: Only name, types, cost, tier, stats, and rules text matter. Art, flavor, and set ID are non-functional.
+
+## 30. Cost & Energy Symbol Conventions (Preview) (NEW)
+Until full symbol sprites finalize, costs are text (e.g., "2 Pyro, 1 Universal"). Interpret order irrelevantly. Future icons will map: Universal (U), Pyro (P), Cryo (C), Geo (G), Hydro (H), Shadow (S). Hybrid/multi-color & variable (X) costs not yet implemented.
+
+Payment Order Guidance: Tap specific (colored) Boosters first, then universal to avoid color lock.
+
+## 31. Timing Windows Summary (NEW)
+| Window | Description | Instants Allowed? |
+|--------|-------------|-------------------|
+| Start (post‑untap) | After start triggers | ✔ |
+| Main | Normal actions | ✔ |
+| Pre‑Combat | After main, before attackers | ✔ |
+| Post‑Attack Declare | After attackers declared, before blockers | ✔ |
+| Post‑Block Declare | After blockers declared, before damage | ✔ |
+| Post‑Damage | After combat damage resolves | ✔ |
+| Second Main | As Main | ✔ |
+| End | After end triggers | ✔ |
+| Opponent Turn Windows | Mirrored; only Instants/flash abilities | ✔ (limited) |
+
+## 32. Common Questions (FAQ) (NEW)
+**Q: Can a Booster both tap for energy and block later that turn?**  
+A: Yes, tapping does not remove its ability to block unless card text says otherwise.
+
+**Q: Does damage persist after combat?**  
+A: No, all non‑persistent damage clears at end of combat.
+
+**Q: Can I play more than 5 HP of Boosters if a card reduces Booster HP?**  
+A: Always count printed HP unless a card explicitly changes the *play limit* calculation.
+
+**Q: Multiple players each have the same Legendary—legal?**  
+A: Yes. Copy limit is deck construction only (no battlefield uniqueness yet).
+
+**Q: What happens if I run out of cards during a multi‑card draw effect?**  
+A: You immediately lose before finishing the remaining draws.
+
+**Q: Can I respond to Booster plays?**  
+A: Yes—Booster play is a normal main-phase action; opponents get priority after it resolves (no stack unless a triggered ability / replacement effect arises).
+
+**Q: Are tokens considered cards?**  
+A: No; they exist only on the battlefield. If they change zone (other than The Pail if specified) they vanish.
+
+**Q: Can a first‑turn Monster attack?**  
+A: Yes. Restriction applies only to tapping for activated abilities / costs.
+
+**Q: Do I have to declare damage assignment order with a single blocker?**  
+A: No, order matters only with multiple blockers.
+
+## 33. Advanced / Optional House Rules (NEW)
+These are NOT core; use for variant testing:
+1. Attacking Taps: All attackers tap when declared (adds pacing).
+2. Persistent Damage: Damage remains until end of *next* turn (increases attrition).
+3. Sideboard 10: Best‑of‑3 match with a 10‑card sideboard (respect copy limits across main+side per copy).
+4. Booster Color Lock: At least 50% of Boosters must share your predominant color (for multi‑color balance stress testing).
+5. Exile Prototype: Treat “exile” as a face‑down public zone cards can return from only if an effect says so.
+
+## 34. Accessibility & UI Tips (NEW)
+- Use grid overlay for cleaner spacing when teaching new players.
+- Color‑blind accommodation: Verbally announce Booster types until final iconography ships.
+- Keep board saves to resume long multiplayer sessions.
+- Limit hotkey reliance for new players; introduce rotation/tap first.
+
+## 35. Versioning & Reporting Ambiguities (NEW)
+When you believe a card contradicts rules:
+1. Apply Golden Rule: Card text > rules.
+2. If still ambiguous, document: card name, situation, proposed interpretations.
+3. Submit with version tag (top of document) so historical context is maintained.
+
+Non‑functional updates (like this expansion) increment the patch (v1.0.1). Functional rule changes will increment the minor (v1.1) or major if backwards‑incompatible.
+
+---
+_End of Document – v1.0.1_
 
 
