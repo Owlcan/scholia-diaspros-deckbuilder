@@ -413,7 +413,7 @@ h1::after {
     border-radius: 50%;
     background: linear-gradient(135deg, var(--gold-light), var(--gold));
     color: var(--parchment);
-    font-size: 1.8rem;
+    font-size: 1.53rem; /* ~15% smaller */
     font-weight: bold;
     cursor: pointer;
     display: flex;
@@ -551,12 +551,12 @@ h1::after {
     border-radius: 14px; 
     font-size: 1.8rem; 
     cursor: pointer; 
-    padding: 20px 30px 24px; 
+    padding: 17px 25px 20px; /* ~15% smaller */
     font-family: 'MedievalSharp', cursive; 
     letter-spacing: 1px; 
     -webkit-text-stroke: .5px var(--gold-dark); 
     text-shadow: 0 0 3px #000, 0 0 6px #000, 1px 1px 0 var(--gold), -1px -1px 0 var(--gold), 1px -1px 0 var(--gold), -1px 1px 0 var(--gold); 
-    min-width: 125px; 
+    min-width: 106px; /* ~15% smaller */
     transition: transform 0.15s ease, filter 0.2s ease; 
 }
 .board-toolbar button:hover { transform: translateY(-3px) scale(1.03); filter: brightness(1.1); }

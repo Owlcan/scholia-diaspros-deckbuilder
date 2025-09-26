@@ -1119,7 +1119,9 @@
         /* ========================= */
         /* Virtual Tabletop Functions */
         /* ========================= */
-        const gameBoardZone = document.getElementById('gameBoardZone');
+    const gameBoardZone = document.getElementById('gameBoardZone');
+    // Zones movement toggle (off by default)
+    let zonesMovable = false;
         let topZIndexCounter = 200; // start above base
         let draggingCardEl = null;
 
@@ -1522,6 +1524,8 @@
             zoneEl.style.width = zone.width + 'px';
             zoneEl.style.height = zone.height + 'px';
             zoneEl.textContent = zone.label;
+            // prevent zones from intercepting taps unless move mode is on
+            zoneEl.style.pointerEvents = zonesMovable ? 'auto' : 'none';
             
             // Double-click to edit label
             zoneEl.addEventListener('dblclick', (e) => {
@@ -1572,12 +1576,13 @@
             });
         }
         
-        function makeZoneDraggable(zoneEl, zone) {
+    function makeZoneDraggable(zoneEl, zone) {
             let isDragging = false;
             let dragOffset = { x: 0, y: 0 };
             
             zoneEl.addEventListener('pointerdown', (e) => {
-                if (e.target.tagName === 'INPUT') return; // Don't drag when editing
+        if (!zonesMovable) return; // only when enabled
+        if (e.target.tagName === 'INPUT') return; // Don't drag when editing
                 
                 isDragging = true;
                 const rect = zoneEl.getBoundingClientRect();
@@ -1610,6 +1615,15 @@
                     saveBoardState();
                 }
             });
+        }
+
+        function setZonesMovable(on){
+            zonesMovable = !!on;
+            document.querySelectorAll('.placeable-zone').forEach(z => {
+                z.style.pointerEvents = zonesMovable ? 'auto' : 'none';
+            });
+            const btn = document.getElementById('moveZonesToggleBtn');
+            if (btn) btn.classList.toggle('active', zonesMovable);
         }
         
         function showZoneContextMenu(x, y, zone) {
@@ -1767,6 +1781,9 @@
                 // Remove existing if present
                 const existing = document.getElementById('appPromptDialog');
                 if (existing) existing.remove();
+                // Temporarily disable board interactions (zones/cards) while modal is open
+                const prevPointer = gameBoardZone.style.pointerEvents;
+                gameBoardZone.style.pointerEvents = 'none';
                 const overlay = document.createElement('div');
                 overlay.id = 'appPromptDialog';
                 overlay.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:3000;font-family:serif;';
@@ -1788,7 +1805,7 @@
                     input.min = '1';
                     input.max = String(opts.max);
                 }
-                const close = (val)=>{ overlay.remove(); resolve(val); };
+                const close = (val)=>{ overlay.remove(); gameBoardZone.style.pointerEvents = prevPointer || ''; resolve(val); };
                 btnOk.addEventListener('click',()=> close(input.value.trim()));
                 btnCancel.addEventListener('click',()=> close(null));
                 overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(null); });
@@ -1801,6 +1818,8 @@
         function showAppAlert(message, { title = 'Notice', okText = 'OK' } = {}) {
             return new Promise(resolve => {
                 const existing = document.getElementById('appAlertDialog'); if (existing) existing.remove();
+                const prevPointer = gameBoardZone.style.pointerEvents;
+                gameBoardZone.style.pointerEvents = 'none';
                 const overlay = document.createElement('div');
                 overlay.id = 'appAlertDialog';
                 overlay.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:4000;font-family:serif;';
@@ -1809,7 +1828,7 @@
                 panel.innerHTML = `<div style="font-weight:700;margin-bottom:12px;font-size:1.05rem;">${title}</div><div style="white-space:pre-wrap;line-height:1.4;margin-bottom:20px;font-size:.95rem;">${message.replace(/\n/g,'<br>')}</div><div style="text-align:right;"><button id="appAlertOk" style="background:#b68c1b;color:#1E1C12;border:1px solid #8a6813;padding:8px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-family:serif;">${okText}</button></div>`;
                 overlay.appendChild(panel); document.body.appendChild(overlay);
                 const okBtn = panel.querySelector('#appAlertOk');
-                const close = () => { overlay.remove(); resolve(); };
+                const close = () => { overlay.remove(); gameBoardZone.style.pointerEvents = prevPointer || ''; resolve(); };
                 okBtn.addEventListener('click', close);
                 overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
                 document.addEventListener('keydown', function handler(e){ if(e.key==='Escape' || e.key==='Enter'){ document.removeEventListener('keydown', handler); close(); }});
@@ -1820,6 +1839,8 @@
         function showAppConfirm(message, { title = 'Confirm', okText = 'OK', cancelText = 'Cancel' } = {}) {
             return new Promise(resolve => {
                 const existing = document.getElementById('appConfirmDialog'); if (existing) existing.remove();
+                const prevPointer = gameBoardZone.style.pointerEvents;
+                gameBoardZone.style.pointerEvents = 'none';
                 const overlay = document.createElement('div');
                 overlay.id = 'appConfirmDialog';
                 overlay.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:4000;font-family:serif;';
@@ -1829,7 +1850,7 @@
                 overlay.appendChild(panel); document.body.appendChild(overlay);
                 const okBtn = panel.querySelector('#appConfirmOk');
                 const cancelBtn = panel.querySelector('#appConfirmCancel');
-                const settle = val => { overlay.remove(); resolve(val); };
+                const settle = val => { overlay.remove(); gameBoardZone.style.pointerEvents = prevPointer || ''; resolve(val); };
                 okBtn.addEventListener('click', () => settle(true));
                 cancelBtn.addEventListener('click', () => settle(false));
                 overlay.addEventListener('click', e => { if (e.target === overlay) settle(false); });
@@ -1883,10 +1904,12 @@
             selectionRect = null; selectionStart = null;
         });
 
-        gameBoardZone.addEventListener('click', (e) => {
+    gameBoardZone.addEventListener('click', (e) => {
             const card = e.target.closest('.board-card');
             if (card && !card.closest('.token-zone')) {
-                if (e.shiftKey) { toggleSelect(card, true); e.stopPropagation(); }
+        // set active card for hotkeys without requiring hold overlay
+        activeCard = card;
+        if (e.shiftKey) { toggleSelect(card, true); e.stopPropagation(); }
             }
         }, true);
 
@@ -2819,6 +2842,26 @@
                 toggleFullUI(); 
             }
         });
+
+        // Global hotkeys for board cards (T/R/F/S/C/Delete)
+        document.addEventListener('keydown', (e) => {
+            if (e.target && (e.target.matches('input,textarea,[contenteditable="true"]'))) return;
+            const key = e.key.toLowerCase();
+            if (!['t','r','f','c','s','delete','backspace'].includes(key)) return;
+            const targets = (multiSelect && multiSelect.size > 0) ? [...multiSelect] : (activeCard ? [activeCard] : []);
+            if (targets.length === 0) return;
+            e.preventDefault();
+            e.stopPropagation();
+            switch (key) {
+                case 't': targets.forEach(el => tapCard(el)); break;
+                case 'r': targets.forEach(el => rotateCard(el)); break;
+                case 'f': targets.forEach(el => flipCard(el)); break;
+                case 'c': targets.forEach(el => { const id = el.dataset.cardId; if (id) playCardToBoard(id); }); break;
+                case 's': targets.forEach(el => { el.dataset.shrunk = (el.dataset.shrunk === '1') ? '0' : '1'; applyPosition(el); }); break;
+                case 'delete':
+                case 'backspace': targets.forEach(el => el.remove()); break;
+            }
+        });
         // If we have a toolbar, inject a button dynamically (safer than editing HTML again)
         (function ensureUICollapseButton(){
             const toolbar = document.querySelector('.board-toolbar');
@@ -2829,6 +2872,21 @@
                 existingBtn.textContent = 'Hide Cards';
                 existingBtn.title = 'Hide/Show Card List UI (U or M)';
             }
+        })();
+
+        // Add Move Zones toggle to toolbar
+        (function ensureMoveZonesToggle(){
+            const toolbar = document.querySelector('.board-toolbar');
+            if(!toolbar) return;
+            if(!toolbar.querySelector('#moveZonesToggleBtn')){
+                const btn = document.createElement('button');
+                btn.id = 'moveZonesToggleBtn';
+                btn.textContent = 'Move Zones';
+                btn.title = 'Enable/disable moving zones';
+                btn.addEventListener('click', ()=> setZonesMovable(!zonesMovable));
+                toolbar.insertBefore(btn, toolbar.firstChild);
+            }
+            setZonesMovable(false);
         })();
 
         document.getElementById('snapToggleBtn').addEventListener('click', toggleSnap);
