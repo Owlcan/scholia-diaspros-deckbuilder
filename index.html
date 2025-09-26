@@ -25,6 +25,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
     <!-- fflate from CDN for .zip booster import (pure JS, Electron-safe) -->
     <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js"></script>
+    <!-- JSZip for deck export (needed for creating .zip archives) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="./styles.css?v=2.2">
 </head>
 <body>
@@ -381,6 +383,41 @@
                 }
                 return;
             }
+            // Ask SW to prefetch only the designated card image (and common icons) for faster first paint
+            try {
+                const variants = getArtVariants(card);
+                const uniqueId = `${card.id}_${cardIndex}`;
+                const artIndex = currentArtIndex[uniqueId] || 0;
+                const designated = variants[artIndex] || card.image_url || card.image_placeholder;
+                if (navigator.serviceWorker?.controller && designated) {
+                    const prefetchList = [designated];
+                    // Optionally include energy icons for this card cost to avoid layout jank
+                    const energyIcons = (function extractIcons(cost){
+                        if (!cost) return [];
+                        const map = {
+                            'Universal': 'src/assets/images/expeditionandgames/TCG Images/universalergy.webp',
+                            'Hydronergy': 'src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp',
+                            'Hydro': 'src/assets/images/expeditionandgames/TCG Images/Hydrergy.webp',
+                            'Pyronergy': 'src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp',
+                            'Pyro': 'src/assets/images/expeditionandgames/TCG Images/Pyrergy.webp',
+                            'Cryonergy': 'src/assets/images/expeditionandgames/TCG Images/cryergy.webp',
+                            'Cryo': 'src/assets/images/expeditionandgames/TCG Images/cryergy.webp',
+                            'Geonergy': 'src/assets/images/expeditionandgames/TCG Images/geoergy.webp',
+                            'Geo': 'src/assets/images/expeditionandgames/TCG Images/geoergy.webp',
+                            'Shadergy': 'src/assets/images/expeditionandgames/TCG Images/shadergy.webp',
+                            'Shadow': 'src/assets/images/expeditionandgames/TCG Images/shadergy.webp'
+                        };
+                        const set = new Set();
+                        const parts = String(cost||'').split(',');
+                        parts.forEach(p => {
+                            const m = p.trim().match(/\d+\s*(.+)/);
+                            if (m && map[m[1].trim()]) set.add(map[m[1].trim()]);
+                        });
+                        return [...set];
+                    })(card.cost);
+                    navigator.serviceWorker.controller.postMessage({ type: 'prefetch-images', urls: [...prefetchList, ...energyIcons] });
+                }
+            } catch (e) { /* non-fatal */ }
             graphicRenderQueue.push({card, cardIndex, graphicId, options, directCallback});
             processGraphicRenderQueue();
         }
@@ -602,16 +639,74 @@
         // Get available art variants for a card - synchronous (uses cache)
         function getArtVariants(card) {
             const cacheKey = card.id;
-            return artVariantsCache.get(cacheKey) || [card.image_url || card.image_placeholder];
+            const primary = card.image_url || card.image_placeholder;
+            const cached = artVariantsCache.get(cacheKey);
+            if (!cached || !cached.length) return [primary];
+            // If primary is not first, reorder (never allow any other variant to displace primary)
+            if (cached[0] !== primary) {
+                const reordered = [primary, ...cached.filter(v => v !== primary)];
+                artVariantsCache.set(cacheKey, reordered);
+                return reordered;
+            }
+            return cached;
         }
 
-        // Cycle to next art variant
+        // Ensure variants exist (lazy); returns Promise of array
+        async function ensureArtVariants(card) {
+            const current = artVariantsCache.get(card.id);
+            if (current && current.length > 1) return current;
+            const variants = await preloadArtVariants(card);
+            return variants || [card.image_url || card.image_placeholder];
+        }
+
+        function renderArtControlsHtml(cardId, cardIndex, totalVariants, currentIndex) {
+            const totalText = totalVariants && totalVariants > 1 ? totalVariants : '?';
+            const indexText = (currentIndex || 0) + 1;
+            return `
+                <div class="art-controls">
+                    <button class="art-cycle-btn prev" onclick="event.stopPropagation(); cycleArt('${cardId}', ${cardIndex}, -1)" title="Previous Art">‹</button>
+                    <span class="art-indicator">${indexText}/${totalText}</span>
+                    <button class="art-cycle-btn next" onclick="event.stopPropagation(); cycleArt('${cardId}', ${cardIndex}, 1)" title="Next Art">›</button>
+                </div>
+            `;
+        }
+
+        async function loadArtVariantsForCard(cardId, cardIndex) {
+            const card = cards.find(c => c.id === cardId) || initialCardData.find(c => c.id === cardId);
+            if (!card) return;
+            const graphicId = getGraphicCacheKey(cardId, cardIndex, 'list');
+            const el = document.getElementById(graphicId);
+            try {
+                const variants = await ensureArtVariants(card);
+                if (!el) return;
+                const uniqueId = `${cardId}_${cardIndex}`;
+                const idx = currentArtIndex[uniqueId] || 0;
+                const controlsHtml = renderArtControlsHtml(cardId, cardIndex, variants.length, idx);
+                const existingControls = el.querySelector('.art-controls');
+                if (existingControls) existingControls.outerHTML = controlsHtml; else el.insertAdjacentHTML('beforeend', controlsHtml);
+            } catch (e) { console.warn('Variant load failed', e); }
+        }
+
+        // Cycle to next art variant (lazy-aware)
         function cycleArt(cardId, cardIndex, direction = 1) {
             const card = cards.find(c => c.id === cardId) || initialCardData.find(c => c.id === cardId);
             if (!card) return;
             
-            const variants = getArtVariants(card);
-            if (variants.length <= 1) return;
+            let variants = getArtVariants(card);
+            if (variants.length <= 1) {
+                // Trigger background discovery; once known, retry and update indicator
+                ensureArtVariants(card).then(v => {
+                    const cardElement = document.querySelector(`[data-card-id="${cardId}"][data-card-index="${cardIndex}"]`);
+                    const indicator = cardElement?.querySelector('.art-indicator');
+                    if (indicator && v && v.length > 0) {
+                        const uniqueId = `${cardId}_${cardIndex}`;
+                        const idx = currentArtIndex[uniqueId] || 0;
+                        indicator.textContent = `${idx + 1}/${v.length}`;
+                    }
+                    if (v && v.length > 1) cycleArt(cardId, cardIndex, direction);
+                });
+                return;
+            }
             
             const uniqueId = `${cardId}_${cardIndex}`;
             const currentIndex = currentArtIndex[uniqueId] || 0;
@@ -644,13 +739,7 @@
                         if (graphicElement) {
                             // Rebuild the entire graphic element content with updated art controls
                             const artVariants = getArtVariants(card);
-                            const updatedArtControls = artVariants.length > 1 ? `
-                                <div class="art-controls">
-                                    <button class="art-cycle-btn prev" onclick="event.stopPropagation(); cycleArt('${cardId}', ${cardIndex}, -1)" title="Previous Art">‹</button>
-                                    <span class="art-indicator">${newIndex + 1}/${artVariants.length}</span>
-                                    <button class="art-cycle-btn next" onclick="event.stopPropagation(); cycleArt('${cardId}', ${cardIndex}, 1)" title="Next Art">›</button>
-                                </div>
-                            ` : '';
+                            const updatedArtControls = renderArtControlsHtml(cardId, cardIndex, artVariants.length, newIndex);
                             
                             graphicElement.innerHTML = `
                                 <img src='${newDataUrl}' alt='${card.name}'/>
@@ -751,18 +840,12 @@
             const graphicId = getGraphicCacheKey(card.id, cardIndex, 'list');
             const cached = graphicCardCache.get(graphicId);
             
-            // Always create art controls if there are variants, regardless of cache state
-            const artControls = artVariants.length > 1 ? `
-                <div class="art-controls">
-                    <button class="art-cycle-btn prev" onclick="event.stopPropagation(); cycleArt('${card.id}', ${cardIndex}, -1)" title="Previous Art">‹</button>
-                    <span class="art-indicator">${artCurrentIndex + 1}/${artVariants.length}</span>
-                    <button class="art-cycle-btn next" onclick="event.stopPropagation(); cycleArt('${card.id}', ${cardIndex}, 1)" title="Next Art">›</button>
-                </div>
-            ` : '';
+            // Always include an art control area: real controls if known, or a lazy-load button
+            const artControls = renderArtControlsHtml(card.id, cardIndex, artVariants.length, artCurrentIndex);
             
             if (cached) {
                 // Image is cached, show it immediately with controls
-                return `
+                const html = `
                     <div class="card-container" data-card-id="${card.id}" data-card-index="${cardIndex}">
                         <div class='card-graphic' data-card-id='${card.id}' data-card-index='${cardIndex}' id='${graphicId}'>
                             <img src='${cached}' alt='${card.name}'/>
@@ -771,6 +854,9 @@
                         </div>
                         <button onclick="event.stopPropagation(); addToDeck('${card.id}', ${cardIndex})" class="add-to-deck-side-btn" id="addBtn_${uniqueCardId}">➕</button>
                     </div>`;
+                // Upgrade controls lazily post-render (fills in total variant count)
+                setTimeout(() => loadArtVariantsForCard(card.id, cardIndex), 0);
+                return html;
             } else {
                 // Image not cached, show loading placeholder but with controls ready
                 queueGraphicRender(card, cardIndex, graphicId, {mode:'list'}, (newDataUrl) => {
@@ -783,6 +869,8 @@
                             ${artControls}
                             <div class="play-btn-overlay" onclick="event.stopPropagation(); playCardToBoard('${card.id}', ${cardIndex})">Play</div>
                         `;
+                        // Upgrade controls lazily after rendering (fills in total variant count)
+                        loadArtVariantsForCard(card.id, cardIndex);
                     }
                 });
                 
@@ -3706,152 +3794,136 @@
                 currentY += 26;
             }
             
-            // Draw ability section if available (matching .ability-section)
-            if (card.ability && card.ability.name) {
-                const abilityAreaHeight = card.flavor_text ? 80 : (420 - currentY - 5); // Reduce height if flavor text exists
-                
-                // Ability background with enhanced opacity for deluxe mode
-                ctx.fillStyle = isDeluxeMode ? 'rgba(30, 28, 18, 0.25)' : '#1E1C12'; // Much more transparent for deluxe
-                ctx.fillRect(8, currentY, 264, abilityAreaHeight);
-                
-                // Ability border with enhanced styling for deluxe mode
-                ctx.strokeStyle = isDeluxeMode ? '#daac17' : '#97740a'; // Gold border for deluxe
-                ctx.lineWidth = isDeluxeMode ? 3 : 1; // Much thicker border for deluxe
-                ctx.strokeRect(8, currentY, 264, abilityAreaHeight);
-                
-                // Add inner border for deluxe mode
-                if (isDeluxeMode) {
-                    ctx.strokeStyle = '#97740a'; // Dark gold inner border
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(9, currentY + 1, 262, abilityAreaHeight - 2);
-                }
-                
-                // Ability name with enhanced styling for deluxe mode
-                ctx.fillStyle = '#daac17'; // --gold
-                ctx.font = 'bold 12px serif';
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'top';
-                
-                if (isDeluxeMode) {
-                    // Add text shadow for deluxe mode
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-                    ctx.shadowOffsetX = 1;
-                    ctx.shadowOffsetY = 1;
-                    ctx.shadowBlur = 3;
-                }
-                
-                ctx.fillText(card.ability.name, 15, currentY + 8);
-                
-                // Ability description with word wrapping and enhanced styling for deluxe mode
-                if (card.ability.description) {
-                    ctx.fillStyle = '#ebc20e'; // --ink
-                    ctx.font = '10px serif';
-                    
-                    const words = card.ability.description.split(' ');
-                    let line = '';
-                    let lineY = currentY + 25;
-                    const maxWidth = 250;
-                    const lineHeight = 12;
-                    
-                    for (let n = 0; n < words.length; n++) {
-                        const testLine = line + words[n] + ' ';
-                        const metrics = ctx.measureText(testLine);
-                        
-                        if (metrics.width > maxWidth && n > 0) {
-                            ctx.fillText(line.trim(), 15, lineY);
-                            line = words[n] + ' ';
-                            lineY += lineHeight;
-                            
-                            // Stop if we're running out of space
-                            if (lineY > currentY + abilityAreaHeight - lineHeight) break;
+            // Draw ability + flavor sections with adaptive font scaling & proper ellipsis
+            let pendingFlavorHeight = 0;
+            // Helper: wrap text with scaling
+            function wrapAndScale({text, maxWidth, availableHeight, baseSize, minSize, lineHeightFactor=1.2, center=false, italic=false}) {
+                if (!text) return {lines:[], fontSize:baseSize, truncated:false};
+                let chosen = baseSize;
+                let lines = [];
+                let truncated = false;
+                for (let size = baseSize; size >= minSize; size--) {
+                    ctx.font = `${italic? 'italic ': ''}${size}px serif`;
+                    const lh = Math.round(size * lineHeightFactor);
+                    const maxLines = Math.max(1, Math.floor(availableHeight / lh));
+                    const words = text.split(' ');
+                    let tempLines = []; let line='';
+                    for (let i=0;i<words.length;i++) {
+                        const testLine = line + words[i] + ' ';
+                        if (ctx.measureText(testLine).width > maxWidth && line) {
+                            tempLines.push(line.trim());
+                            line = words[i] + ' ';
+                            if (tempLines.length === maxLines) break; // overflow
                         } else {
                             line = testLine;
                         }
                     }
-                    
-                    // Draw the last line
-                    if (line.trim() && lineY <= currentY + abilityAreaHeight - lineHeight) {
-                        ctx.fillText(line.trim(), 15, lineY);
+                    if (line.trim() && tempLines.length < maxLines) tempLines.push(line.trim());
+                    // Did we fit all words?
+                    const allWordsUsed = tempLines.join(' ').trim().split(' ').length >= text.trim().split(' ').length;
+                    if (!allWordsUsed && tempLines.length === maxLines) {
+                        truncated = true;
+                        // Apply ellipsis to last line
+                        let last = tempLines[tempLines.length-1];
+                        while (last.length > 0 && ctx.measureText(last + '…').width > maxWidth) {
+                            last = last.slice(0, -1);
+                        }
+                        tempLines[tempLines.length-1] = last + '…';
+                    }
+                    if (allWordsUsed || size === minSize) {
+                        chosen = size; lines = tempLines; break;
                     }
                 }
-                
-                // Reset shadow
-                ctx.shadowColor = 'transparent';
-                ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 0;
-                ctx.shadowBlur = 0;
-                
-                currentY += abilityAreaHeight + 3; // Move current Y position down
+                return {lines, fontSize:chosen, truncated};
             }
-            
-            // Draw flavor text section if available (must appear at bottom of card)
-            if (card.flavor_text) {
-                const flavorAreaHeight = 420 - currentY - 5;
-                
-                // Flavor text background with enhanced opacity for deluxe mode
-                ctx.fillStyle = isDeluxeMode ? 'rgba(30, 28, 18, 0.25)' : '#1E1C12'; // Much more transparent for deluxe
-                ctx.fillRect(8, currentY, 264, flavorAreaHeight);
-                
-                // Flavor text border with enhanced styling for deluxe mode
-                ctx.strokeStyle = isDeluxeMode ? '#daac17' : '#97740a'; // Gold border for deluxe
-                ctx.lineWidth = isDeluxeMode ? 3 : 1; // Much thicker border for deluxe
-                ctx.strokeRect(8, currentY, 264, flavorAreaHeight);
-                
-                // Add inner border for deluxe mode
-                if (isDeluxeMode) {
-                    ctx.strokeStyle = '#97740a'; // Dark gold inner border
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(9, currentY + 1, 262, flavorAreaHeight - 2);
+
+            if (card.ability && card.ability.name) {
+                const totalRemaining = 420 - currentY - 5;
+                const flavorExists = !!card.flavor_text;
+                const maxWidth = 250;
+                const baseAbilityFont = 10;
+                const minAbilityFont = 7;
+                // First rough lines count at base size to estimate needed height
+                ctx.font = `${baseAbilityFont}px serif`;
+                const words = (card.ability.description||'').split(' ').filter(w=>w.length);
+                let estLines = 0; let line='';
+                words.forEach(w=>{ const test=line+w+' '; if (ctx.measureText(test).width>maxWidth && line){ estLines++; line=w+' '; } else { line=test; } });
+                if (line.trim()) estLines++;
+                const lineHeightEst = Math.round(baseAbilityFont*1.2);
+                const neededAbilityHeight = 8 + 12 + 5 + (estLines * lineHeightEst) + 8; // paddings + title
+                let abilityAreaHeight;
+                if (flavorExists) {
+                    const minFlavor = 34; // reserve minimal flavor area
+                    const maxAbility = Math.max(0, totalRemaining - minFlavor);
+                    abilityAreaHeight = Math.min(neededAbilityHeight, maxAbility);
+                    pendingFlavorHeight = totalRemaining - abilityAreaHeight;
+                } else {
+                    abilityAreaHeight = totalRemaining;
                 }
-                
-                // Flavor text with quotation marks and centering, enhanced for deluxe mode
-                ctx.fillStyle = '#8f770d'; // --ink2 (slightly muted)
-                ctx.font = 'italic 9px serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'top';
-                
-                if (isDeluxeMode) {
-                    // Add text shadow for deluxe mode
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-                    ctx.shadowOffsetX = 1;
-                    ctx.shadowOffsetY = 1;
-                    ctx.shadowBlur = 2;
+
+                ctx.fillStyle = isDeluxeMode ? 'rgba(30,28,18,0.25)' : '#1E1C12';
+                ctx.fillRect(8, currentY, 264, abilityAreaHeight);
+                ctx.strokeStyle = isDeluxeMode ? '#daac17' : '#97740a';
+                ctx.lineWidth = isDeluxeMode ? 3 : 1;
+                ctx.strokeRect(8, currentY, 264, abilityAreaHeight);
+                if (isDeluxeMode) { ctx.strokeStyle='#97740a'; ctx.lineWidth=1; ctx.strokeRect(9,currentY+1,262,abilityAreaHeight-2); }
+
+                // Ability name
+                ctx.fillStyle = '#daac17';
+                ctx.font = 'bold 12px serif';
+                ctx.textAlign = 'left'; ctx.textBaseline='top';
+                if (isDeluxeMode) { ctx.shadowColor='rgba(0,0,0,0.8)'; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1; ctx.shadowBlur=3; }
+                ctx.fillText(card.ability.name, 15, currentY + 8);
+
+                // Description
+                if (card.ability.description && abilityAreaHeight > 30) {
+                    const availableTextHeight = abilityAreaHeight - (8+12+5+8); // remove paddings & title region
+                    const wrap = wrapAndScale({
+                        text: card.ability.description,
+                        maxWidth: maxWidth,
+                        availableHeight: availableTextHeight,
+                        baseSize: baseAbilityFont,
+                        minSize: minAbilityFont
+                    });
+                    ctx.fillStyle = '#ebc20e';
+                    ctx.font = `${wrap.fontSize}px serif`;
+                    const lineHeight = Math.round(wrap.fontSize*1.2);
+                    let lineY = currentY + 25; // below title
+                    wrap.lines.forEach(l=>{ if (lineY + lineHeight <= currentY + abilityAreaHeight + 2) { ctx.fillText(l, 15, lineY); lineY += lineHeight; } });
                 }
-                
-                // Word wrap the flavor text
-                const flavorText = `"${card.flavor_text}"`;
-                const words = flavorText.split(' ');
-                let line = '';
-                let lineY = currentY + 12;
-                const maxWidth = 240;
-                const lineHeight = 11;
-                
-                for (let n = 0; n < words.length; n++) {
-                    const testLine = line + words[n] + ' ';
-                    const metrics = ctx.measureText(testLine);
-                    
-                    if (metrics.width > maxWidth && n > 0) {
-                        ctx.fillText(line.trim(), 140, lineY); // Center text at x=140
-                        line = words[n] + ' ';
-                        lineY += lineHeight;
-                        
-                        // Stop if we're running out of space
-                        if (lineY > currentY + flavorAreaHeight - lineHeight) break;
-                    } else {
-                        line = testLine;
-                    }
+                ctx.shadowColor='transparent'; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0; ctx.shadowBlur=0;
+                currentY += abilityAreaHeight + 3;
+            }
+
+            if (card.flavor_text && (pendingFlavorHeight || (!card.ability || !card.ability.name))) {
+                const flavorAreaHeight = pendingFlavorHeight || (420 - currentY - 5);
+                if (flavorAreaHeight > 18) {
+                    ctx.fillStyle = isDeluxeMode ? 'rgba(30,28,18,0.25)' : '#1E1C12';
+                    ctx.fillRect(8, currentY, 264, flavorAreaHeight);
+                    ctx.strokeStyle = isDeluxeMode ? '#daac17' : '#97740a';
+                    ctx.lineWidth = isDeluxeMode ? 3 : 1;
+                    ctx.strokeRect(8, currentY, 264, flavorAreaHeight);
+                    if (isDeluxeMode) { ctx.strokeStyle='#97740a'; ctx.lineWidth=1; ctx.strokeRect(9,currentY+1,262,flavorAreaHeight-2); }
+                    const quoted = `"${card.flavor_text}"`;
+                    const availableTextHeight = flavorAreaHeight - 16; // padding top + bottom
+                    const wrapFlav = wrapAndScale({
+                        text: quoted,
+                        maxWidth: 240,
+                        availableHeight: availableTextHeight,
+                        baseSize: 9,
+                        minSize: 7,
+                        italic: true,
+                        center: true
+                    });
+                    ctx.fillStyle = '#8f770d';
+                    ctx.font = `italic ${wrapFlav.fontSize}px serif`;
+                    ctx.textAlign='center'; ctx.textBaseline='top';
+                    if (isDeluxeMode) { ctx.shadowColor='rgba(0,0,0,0.8)'; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1; ctx.shadowBlur=2; }
+                    const lineHeight = Math.round(wrapFlav.fontSize*1.2);
+                    let startY = currentY + 12; // top padding
+                    wrapFlav.lines.forEach(l=>{ if (startY + lineHeight <= currentY + flavorAreaHeight + 1) { ctx.fillText(l, 140, startY); startY += lineHeight; } });
+                    ctx.shadowColor='transparent'; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0; ctx.shadowBlur=0;
                 }
-                
-                // Draw the last line
-                if (line.trim() && lineY <= currentY + flavorAreaHeight - lineHeight) {
-                    ctx.fillText(line.trim(), 140, lineY);
-                }
-                
-                // Reset shadow
-                ctx.shadowColor = 'transparent';
-                ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 0;
-                ctx.shadowBlur = 0;
             }
             
             return canvas;
@@ -4408,11 +4480,8 @@
                 filteredCards = [...cards];
                 updateProcessingIndicator('init', 'Cards loaded, processing...', 25);
                 
-                // Preload art variants for all cards and wait for completion
-                updateProcessingIndicator('init', 'Loading art variants...', 50);
-                await preloadAllArtVariants();
-                
-                updateProcessingIndicator('init', 'Finalizing...', 90);
+                // Defer art variant discovery to first use to speed up initial load
+                updateProcessingIndicator('init', 'Finalizing...', 70);
                 loadFromStorage();
                 filterCards();
                 updateStats();
@@ -4453,27 +4522,7 @@
             }
         }
         
-        // Preload art variants for all cards
-        async function preloadAllArtVariants() {
-            showProcessingIndicator('artVariants', 'Preloading art variants...', 0);
-            const total = cards.length;
-            let completed = 0;
-            
-            const promises = cards.map(async (card, index) => {
-                await preloadArtVariants(card);
-                completed++;
-                const progress = Math.round((completed / total) * 100);
-                updateProcessingIndicator('artVariants', `Preloading art variants... (${completed}/${total})`, progress);
-            });
-            
-            await Promise.all(promises);
-            console.log('Art variants preloaded for', artVariantsCache.size, 'cards');
-            
-            setTimeout(() => hideProcessingIndicator('artVariants'), 1000);
-            
-            // Re-render cards to show art cycle buttons where appropriate
-            renderCards();
-        }
+    // Remove global preloading; variants will be discovered lazily per card when needed
 
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {

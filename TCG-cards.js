@@ -2445,7 +2445,7 @@ const initialCardData = [
                 cost: "3 Shadergy, 3 Universal",
                 ability: {
                     name: "Eldritch Connection",
-                    description: "All your Darkling cards can attack multiple targets. When a Darkling destroys an enemy, summon another random Darkling."
+                    description: "All darklings under your control have Penetration (strike back row targets when they hit a front row target) and whenever a darkling destroys an enemy, create a +1/+1 darkling token under your control."
                 },
                 image_url: "src/assets/images/expeditionandgames/TCG Images/tendrilcharm.webp"
             },
@@ -2968,4 +2968,29 @@ const initialCardData = [
   image_url: "src/assets/images/expeditionandgames/TCG Images/blessedbag (1).webp",
   flavor_text: "Blessed by Elasharna herself, this bag never runs out of exactly what you need."
 },
+ {
+              "id": "env_006",
+              "name": "Ancient Nursery Dungeon",  
+              "type": "Environment Card",
+              "race": "Location",  
+              "tier": "Utility",  
+              "cost": "2 Universal",
+"ability": {
+        "name": "Oppressive Ward",
+        "description": "While this location is active, all Spell cards cost +1 Universal Booster to cast. In addition, Monster attack values (Students are unaffected) are capped at 6 unless that Monster's controller returns a Booster they control to their hand from play before declaring that Monster as an attacker. This payment (returning a Booster) may be repeated for multiple Monsters in a turn."
+    },
+              "image_url": "src/assets/images/expeditionandgames/TCG Images/abandonednursery (1).webp",
+              "flavor_text": "The longer you explore, the bigger the fun seems to get!"
+            },
+  {
+    "id": "spell_102",
+    "name": "Sudden Interruption",
+    "type": "Spell Card",
+    "cost": "2 Universal",
+    "ability": {
+      "name": "Counter-Spell-Light",
+      "description": "Instant: Counter target Spell unless its controller pays 2 energy."
+    },
+    "image_url": "src/assets/images/expeditionandgames/TCG Images/suddeninterruption (1).webp"
+  },
 ];

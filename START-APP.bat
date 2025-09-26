@@ -10,15 +10,15 @@ REM Check if Python is available
 python --version >nul 2>&1
 if %errorlevel% == 0 (
     echo Using Python server...
-    start http://localhost:8000
-    python -m http.server 8000
+    start http://localhost:8069
+    python -m http.server 8069
 ) else (
     REM Check if Node.js is available
     node --version >nul 2>&1
     if %errorlevel% == 0 (
         echo Using Node.js server...
-        start http://localhost:8000
-        npx http-server -p 8000 -c-1
+        start http://localhost:8069
+        npx http-server -p 8069 -c-1
     ) else (
         echo.
         echo ERROR: Neither Python nor Node.js found!

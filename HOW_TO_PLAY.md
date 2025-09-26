@@ -118,6 +118,7 @@ Mandatory rules:
 - Minimum deck size: 40 cards.
 - Copy limits: Normal (non‑Booster, non‑Boss, non‑Legendary) = 4; Boss = 2; Legendary = 1; Boosters = unlimited (must include at least 1; recommended substantially more).
 - One Legendary limit is per player’s deck, not global.
+- Named Students: Unless a Student is explicitly printed as Legendary or Boss, it follows normal copy limits (up to 4) BUT battlefield uniqueness for named Students is limited to one copy per player at a time. Each player may control their own copy of the same named Student simultaneously (e.g., both players may each have a "Helen" in play), but a single player cannot have two copies of the same named Student on the battlefield at once. Extra copies drawn/held are still legal and may replace a destroyed/removed copy later.
 - No sideboard rules defined (ignored for v1.0).
 
 Recommended early balance targets:
@@ -347,6 +348,7 @@ Before placing/playing a card you may cycle artwork variants. The currently sele
 - Unblockable: Can’t be blocked.
 - Flying: Can only be blocked by Flying (future Reach will allow non‑Flying to block).
 - Legendary: Deck construction limit 1 per player (no battlefield uniqueness yet).
+- Named Student (rule clarification – not a printed keyword): Treated as a normal Student for deck building (up to 4 unless also Legendary/Boss) but limited to one battlefield copy per controller. This is an in‑play uniqueness restriction at the player level, not global; opponents can control their own copy.
 - Boss: Deck construction limit 2; no extra rules yet.
 - Instant: May be played whenever you have priority.
 - Persistent: Card remains on battlefield after resolving instead of going to The Pail.
